@@ -1,6 +1,7 @@
 const std = @import("std");
 const sdl3 = @import("sdl3");
 const internal = @import("internal.zig");
+const assert = @import("assert.zig");
 
 pub const WindowSettings = struct {
     fullscreen: bool,
@@ -16,5 +17,5 @@ pub fn GetSettings() WindowSettings {
 }
 
 pub fn SetFullscreen(value: bool) void {
-    internal.sdl_window.setFullscreen(value);
+    assert.ok(internal.sdl_window.setFullscreen(value));
 }
