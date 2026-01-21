@@ -18,6 +18,8 @@ pub var sdl_text_engine: sdl3.ttf.RendererTextEngine = undefined;
 pub var application_running: bool = true;
 pub var application_path: []u8 = undefined;
 
+pub var clear_color: root.Color = root.Color.Black;
+
 pub var last_frame_time: f32 = 0.016;
 
 pub const KeyState = struct {

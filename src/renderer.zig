@@ -7,6 +7,10 @@ const internal = @import("internal.zig");
 
 var Fov: f32 = 17;
 
+pub fn setClearColor(color: TW.Color) void {
+    internal.clear_color = color;
+}
+
 pub fn setFov(fov: f32) void {
     Fov = fov;
 }
