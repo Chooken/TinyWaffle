@@ -68,6 +68,20 @@ pub fn Rect(comptime T: type) type {
         w: T,
         h: T,
 
+        pub fn max(self: *Rect(T)) Vec2(T) {
+            return .{ 
+                .x = @max(self.x, self.x + self.w), 
+                .y = @max(self.y, self.y + self.h)
+            };
+        }
+
+        pub fn min(self: *Rect(T)) Vec2(T) {
+            return .{ 
+                .x = @min(self.x, self.x + self.w), 
+                .y = @min(self.y, self.y + self.h)
+            };
+        }
+
         pub fn from(x: T, y: T, w: T, h: T) Rect(T) {
             return Rect(T) {
                 .x = x,
@@ -83,6 +97,47 @@ pub fn Rect(comptime T: type) type {
                 .y = std.math.cast(T0, self.y),
                 .w = std.math.cast(T0, self.w),
                 .h = std.math.cast(T0, self.h),
+            };
+        }
+
+        pub fn overlaps(self: *Rect(T), other: Rect(T)) bool {
+            const self_min = self.min();
+            const self_max = self.max();
+            const other_min = other.min();
+            const other_max = other.max();
+
+            if (other_max.x < self_min.x or other_min.x > self_max.x or 
+                other_max.y < self_min.y or other_min.y > self_max.y)
+                return false;
+
+            return true;
+        }
+
+        pub fn getOverlap(self: *Rect(T), other: Rect(T)) Rect(T) {
+            const self_min = self.min();
+            const self_max = self.max();
+            const other_min = other.min();
+            const other_max = other.max();
+
+            if (other_max.x < self_min.x or other_min.x > self_max.x or 
+                other_max.y < self_min.y or other_min.y > self_max.y)
+                return .{};
+
+            const overlap_max = Vec2(T) {
+                .x = @min(self_max.x, other_max.x),
+                .y = @min(self_max.y, other_max.y),
+            };
+
+            const overlap_min = Vec2(T) {
+                .x = @max(self_min.x, other_min.x),
+                .y = @max(self_min.y, other_min.y),
+            };
+
+            return .{
+                .x = overlap_min.x,
+                .y = overlap_min.y,
+                .w = overlap_max.x - overlap_min.x,
+                .h = overlap_max.y - overlap_min.y,
             };
         }
     };

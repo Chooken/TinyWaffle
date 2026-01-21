@@ -138,7 +138,7 @@ fn loop() !void {
         else {
             // Call Update Logic
             scene_management.update() catch |err| {
-                std.debug.print("An error occured in a scene function: {s}", .{@errorName(err)});
+                std.debug.print("An error occured in a scene function: {s}\n", .{@errorName(err)});
             };
         }
 
