@@ -87,19 +87,9 @@ pub const Texture = struct {
         
         const width, const height = texture.sdl_texture.getSize() catch return null;
 
-        if (pos.x > @as(usize, @intFromFloat(width)) or pos.y > @as(usize, @intFromFloat(height))) return null;
+        if (self.bounds.x + pos.x > @as(usize, @intFromFloat(width)) or self.bounds.y + pos.y > @as(usize, @intFromFloat(height))) return null;
 
-        const surface = texture.sdl_texture.lockToSurface(.{
-            .x = @intCast(self.bounds.x + pos.x),
-            .y = @intCast(self.bounds.y + pos.y),
-            .w = 1,
-            .h = 1,
-        }) catch return null;
-        defer { 
-            texture.sdl_texture.unlock();
-        }
-
-        const pixel = surface.readPixel(0, 0) catch return null;
+        const pixel = texture.sdl_surface.readPixel(self.bounds.x + pos.x, self.bounds.y + pos.y) catch return null;
 
         return Color.from(pixel.r, pixel.g, pixel.b, pixel.a);
     }
@@ -112,22 +102,24 @@ pub const Texture = struct {
 
         if (self.bounds.x + pos.x > @as(usize, @intFromFloat(width)) or self.bounds.y + pos.y > @as(usize, @intFromFloat(height))) return;
 
-        const surface = Assert.ok(texture.sdl_texture.lockToSurface(.{
-            .x = @intCast(self.bounds.x + pos.x),
-            .y = @intCast(self.bounds.y + pos.y),
-            .w = 1,
-            .h = 1,
-        }));
-        defer { 
-            texture.sdl_texture.unlock();
-        }
-
-        surface.writePixel(0, 0, .{
+        texture.sdl_surface.writePixel(0, 0, .{
             .r = color.r,
             .g = color.g,
             .b = color.b,
             .a = color.a,
         }) catch return;
+
+        const colorArray = [_]u8 { color.r, color.g, color.b, color.a };
+
+        texture.sdl_texture.update(
+            .{
+                .x = @intCast(self.bounds.x + pos.x),
+                .y = @intCast(self.bounds.y + pos.y),
+                .w = 1,
+                .h = 1,
+            }, 
+            @ptrCast(colorArray),
+            texture.sdl_surface.getPitch());
     }
 };
 

@@ -4,6 +4,7 @@ const assert = @import("assert.zig");
 const internal = @import("internal.zig");
 
 pub const InternalTexture = struct {
+    sdl_surface: sdl3.surface.Surface,
     sdl_texture: sdl3.render.Texture,
 };
 
@@ -38,6 +39,7 @@ pub fn getInternalTexture(name: []const u8, allocator: std.mem.Allocator) !*Inte
         try texture.update(null, @ptrCast(surface.getPixels().?), surface.getPitch());
 
         const internal_texture = InternalTexture {
+            .sdl_surface = surface,
             .sdl_texture = texture,
         };
 
@@ -59,6 +61,7 @@ pub fn addInternalTextureFromData(name: []const u8, data: []const u8) !void {
     try texture.update(null, @ptrCast(surface.getPixels().?), surface.getPitch());
 
     const internal_texture = InternalTexture {
+        .sdl_surface = surface,
         .sdl_texture = texture,
     };
 
