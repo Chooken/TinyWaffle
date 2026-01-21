@@ -68,14 +68,14 @@ pub fn Rect(comptime T: type) type {
         w: T,
         h: T,
 
-        pub fn max(self: *Rect(T)) Vec2(T) {
+        pub fn max(self: *const Rect(T)) Vec2(T) {
             return .{ 
                 .x = @max(self.x, self.x + self.w), 
                 .y = @max(self.y, self.y + self.h)
             };
         }
 
-        pub fn min(self: *Rect(T)) Vec2(T) {
+        pub fn min(self: *const Rect(T)) Vec2(T) {
             return .{ 
                 .x = @min(self.x, self.x + self.w), 
                 .y = @min(self.y, self.y + self.h)
