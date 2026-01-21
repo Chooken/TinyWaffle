@@ -113,7 +113,7 @@ pub fn Rect(comptime T: type) type {
             return true;
         }
 
-        pub fn getOverlap(self: *const Rect(T), other: Rect(T)) Rect(T) {
+        pub fn getOverlap(self: *const Rect(T), other: Rect(T)) ?Rect(T) {
             const self_min = self.min();
             const self_max = self.max();
             const other_min = other.min();
@@ -121,7 +121,7 @@ pub fn Rect(comptime T: type) type {
 
             if (other_max.x < self_min.x or other_min.x > self_max.x or 
                 other_max.y < self_min.y or other_min.y > self_max.y)
-                return .{};
+                return null;
 
             const overlap_max = Vec2(T) {
                 .x = @min(self_max.x, other_max.x),
