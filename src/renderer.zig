@@ -122,3 +122,18 @@ pub fn worldToScreenspace(from: TW.Vec2(f32)) TW.Vec2 (f32)
         .y = @as(f32, @floatFromInt(renderheight)) / 2 - unitSize / 2 + from.y * unitSize,
     };
 }
+
+pub fn getScreenRect() TW.Rect(f32) {
+    const renderwidth, const renderheight = internal.sdl_renderer.getOutputSize() catch {
+        return .{ .x = 0, .y = 0 };
+    };
+
+    const unitSize = @as(f32, @floatFromInt(renderheight)) / Fov;
+
+    return .{
+        .x = 0,
+        .y = 0,
+        .w = @as(f32, @floatFromInt(renderwidth)) / unitSize,
+        .h = @as(f32, @floatFromInt(renderheight)) / unitSize,
+    };
+}
