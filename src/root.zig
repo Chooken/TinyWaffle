@@ -9,6 +9,7 @@ pub const Renderer = @import("renderer.zig");
 pub const Assets = @import("assets.zig");
 pub const Input = @import("input.zig");
 pub const Time = @import("time.zig");
+pub const SceneManagement = @import("scenemanagement.zig");
 
 pub const Color = struct { 
     r: u8,
@@ -148,6 +149,6 @@ pub const TextureAtlas = struct {
     }
 };
 
-pub fn run(title: [:0]const u8, width: usize, height: usize, update_callback: *const fn() anyerror!void) void {
-    internal.run(title, width, height, update_callback);
+pub fn run(title: [:0]const u8, width: usize, height: usize, start_scene: SceneManagement.Scene) void {
+    internal.run(title, width, height, start_scene);
 }

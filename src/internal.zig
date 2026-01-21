@@ -1,9 +1,11 @@
 const std = @import("std");
 const sdl3 = @import("sdl3");
+const root = @import("root.zig");
 const assert = @import("assert.zig");
 const splash = @import("splash.zig");
 pub const audio = @import("audio_internal.zig");
 pub const assets = @import("assets_internal.zig");
+pub const scene_management = @import("scene_internal.zig");
 
 pub var allocator: std.mem.Allocator = undefined;
 
@@ -12,8 +14,6 @@ pub var playing_splash: bool = true;
 pub var sdl_window: sdl3.video.Window = undefined;
 pub var sdl_renderer: sdl3.render.Renderer = undefined;
 pub var sdl_text_engine: sdl3.ttf.RendererTextEngine = undefined;
-
-pub var update_callback: *const fn() anyerror!void = undefined;
 
 pub var application_running: bool = true;
 pub var application_path: []u8 = undefined;
@@ -27,7 +27,7 @@ pub const KeyState = struct {
 
 pub var input: std.AutoHashMap(sdl3.keycode.Keycode, KeyState) = undefined;
 
-pub fn run(title: [:0]const u8, width: usize, height: usize, updateCallback: *const fn() anyerror!void) void {
+pub fn run(title: [:0]const u8, width: usize, height: usize, start_scene: root.SceneManagement.Scene) void {
     defer sdl3.shutdown();
 
     const initFlags = sdl3.InitFlags { 
@@ -56,7 +56,7 @@ pub fn run(title: [:0]const u8, width: usize, height: usize, updateCallback: *co
 
     assert.ok(audio.init());
 
-    update_callback = updateCallback;
+    scene_management.setNext(start_scene);
 
     var gpa: std.heap.GeneralPurposeAllocator(.{}) = .init;
     allocator = gpa.allocator();
@@ -131,8 +131,8 @@ fn loop() !void {
         }
         else {
             // Call Update Logic
-            update_callback() catch |err| {
-                std.debug.print("An error occured in update function: {s}", .{@errorName(err)});
+            scene_management.update() catch |err| {
+                std.debug.print("An error occured in a scene function: {s}", .{@errorName(err)});
             };
         }
 
