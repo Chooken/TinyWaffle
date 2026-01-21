@@ -139,6 +139,8 @@ fn loop() !void {
         // Preset Framebuffer.
         assert.ok(sdl_renderer.present());
     }
+
+    scene_management.exit();
 }
 
 pub fn quit() void {

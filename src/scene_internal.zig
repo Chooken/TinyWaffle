@@ -16,10 +16,17 @@ pub fn update() !void {
     if (next_scene) |scene| {
         if (active_scene) |a_scene| {
             try a_scene.on_exit();
-        } 
+        }
 
         try scene.on_enter();
 
         active_scene = scene;
+        next_scene = null;
+    }
+}
+
+pub fn exit() void {
+    if (active_scene) |scene| {
+        root.Assert.ok(scene.on_exit());
     }
 }
