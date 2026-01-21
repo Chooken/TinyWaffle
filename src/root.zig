@@ -87,7 +87,7 @@ pub const Texture = struct {
         
         const width, const height = texture.sdl_texture.getSize() catch return null;
 
-        if (pos > @as(usize, @intFromFloat(width)) or pos > @as(usize, @intFromFloat(height))) return null;
+        if (pos.x > @as(usize, @intFromFloat(width)) or pos.y > @as(usize, @intFromFloat(height))) return null;
 
         const surface = texture.sdl_texture.lockToSurface(.{
             .x = @intCast(self.bounds.x + pos.x),
