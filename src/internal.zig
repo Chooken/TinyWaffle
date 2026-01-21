@@ -123,7 +123,11 @@ fn loop() !void {
         }
 
         // Clear Framebuffer.
-        assert.ok(sdl_renderer.setDrawColor(.{.r = 0, .g = 0, .b = 0, .a = 0 }));
+        assert.ok(sdl_renderer.setDrawColor(.{
+            .r = clear_color.r, 
+            .g = clear_color.g, 
+            .b = clear_color.b, 
+            .a = clear_color.a }));
         assert.ok(sdl_renderer.clear());
 
         last_frame_time = @as(f32, @floatFromInt(timer.lap())) / std.time.ns_per_s ;
