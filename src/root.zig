@@ -17,6 +17,13 @@ pub const Color = struct {
     b: u8,
     a: u8,
 
+    pub const Red = Color.from(255, 0, 0, 255);
+    pub const Yellow = Color.from(255, 255, 0, 255);
+    pub const Green = Color.from(0, 255, 0, 255);
+    pub const Cyan = Color.from(0, 255, 255, 255);
+    pub const Blue = Color.from(0, 0, 255, 255);
+    pub const Pink = Color.from(255, 0, 255, 255);
+
     pub fn from(r: u8, g: u8, b: u8, a: u8) Color {
         return Color {
             .r = r,
