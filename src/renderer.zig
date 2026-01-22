@@ -77,13 +77,9 @@ pub fn drawTexture(texture: TW.Texture, pos: TW.Vec2(f32), color: TW.Color) void
             color);
         return;
     };
+    
+    //assert.ok(internal_texture.sdl_texture.setColorMod(color.r, color.g, color.b));
 
-    const oldMod = assert.ok(internal_texture.sdl_texture.getColorMod());
-
-    if (oldMod.r != color.r or oldMod.g != color.g or oldMod.b != color.b) {
-        std.debug.print("{d}, {d}, {d}", .{color.r, color.g, color.b});
-        assert.ok(internal_texture.sdl_texture.setColorMod(color.r, color.g, color.b));
-    }
     assert.ok(internal.sdl_renderer.renderTexture(internal_texture.sdl_texture, sprite_rect, dst_rect));
 }
 
