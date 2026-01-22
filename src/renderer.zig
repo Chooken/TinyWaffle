@@ -78,7 +78,7 @@ pub fn drawTexture(texture: TW.Texture, pos: TW.Vec2(f32), color: TW.Color) void
         return;
     };
     
-    //assert.ok(internal_texture.sdl_texture.setColorMod(color.r, color.g, color.b));
+    assert.ok(internal_texture.sdl_texture.setColorMod(color.r, color.g, color.b));
 
     assert.ok(internal.sdl_renderer.renderTexture(internal_texture.sdl_texture, sprite_rect, dst_rect));
 }
