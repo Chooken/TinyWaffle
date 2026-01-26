@@ -1,6 +1,7 @@
 const splashAnimation: []const u8 = @embedFile("./included_files/Engine Intro.png");
 const TW = @import("root.zig");
 const internal = @import("internal.zig");
+const profiling = @import("profiling.zig");
 
 pub fn init() void {
     TW.Assert.ok(internal.assets.addInternalTextureFromData("splash", splashAnimation));

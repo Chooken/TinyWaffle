@@ -10,6 +10,7 @@ pub const Assets = @import("assets.zig");
 pub const Input = @import("input.zig");
 pub const Time = @import("time.zig");
 pub const SceneManagement = @import("scenemanagement.zig");
+pub const Profiling = @import("profiling.zig");
 
 pub const Color = struct { 
     r: u8,

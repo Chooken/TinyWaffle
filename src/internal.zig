@@ -3,6 +3,7 @@ const sdl3 = @import("sdl3");
 const root = @import("root.zig");
 const assert = @import("assert.zig");
 const splash = @import("splash.zig");
+pub const profiling = @import("profiling_internal.zig");
 pub const audio = @import("audio_internal.zig");
 pub const assets = @import("assets_internal.zig");
 pub const scene_management = @import("scene_internal.zig");
@@ -76,6 +77,9 @@ pub fn run(title: [:0]const u8, width: usize, height: usize, start_scene: root.S
     input = std.AutoHashMap(sdl3.keycode.Keycode, KeyState).init(allocator);
     defer input.deinit();
 
+    assert.ok(profiling.init());
+    defer profiling.deinit();
+
     assert.ok(assets.init(allocator));
     defer assets.deinit();
 
@@ -89,7 +93,12 @@ fn loop() !void {
     var timer = try std.time.Timer.start();
 
     while (application_running) {
+
+        profiling.reset();
+
         // Events
+        profiling.startScope("Events");
+
         var iter = input.valueIterator();
 
         while (iter.next()) |value| {
@@ -122,6 +131,10 @@ fn loop() !void {
             }
         }
 
+        profiling.endScope("Events");
+
+        profiling.startScope("App Update");
+
         // Clear Framebuffer.
         assert.ok(sdl_renderer.setDrawColor(.{
             .r = clear_color.r, 
@@ -131,6 +144,8 @@ fn loop() !void {
         assert.ok(sdl_renderer.clear());
 
         last_frame_time = @as(f32, @floatFromInt(timer.lap())) / std.time.ns_per_s ;
+
+        profiling.startScope("Scene Update");
 
         if (playing_splash) {
             splash.update();
@@ -142,8 +157,14 @@ fn loop() !void {
             };
         }
 
+        profiling.endScope("Scene Update");
+
+        profiling.endScope("App Update");
+
         // Preset Framebuffer.
         assert.ok(sdl_renderer.present());
+
+        profiling.printTimings();
     }
 
     scene_management.exit();
