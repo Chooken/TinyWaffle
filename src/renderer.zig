@@ -15,6 +15,10 @@ pub fn setFov(fov: f32) void {
     Fov = fov;
 }
 
+pub fn getFov() f32 {
+    return Fov;
+}
+
 pub fn drawLine(start: TW.Vec2(f32), end: TW.Vec2(f32), color: TW.Color) void {
 
     assert.ok(internal.sdl_renderer.setDrawColor(.{ 
@@ -52,7 +56,7 @@ pub fn drawRect(rect: TW.Rect(f32), color: TW.Color) void {
         .h = rect.h * unitSize }));
 }
 
-pub fn drawTexture(texture: TW.Texture, pos: TW.Vec2(f32), color: TW.Color) void {
+pub fn drawTexture(texture: TW.Texture, pos: TW.Vec2(f32), color: TW.Color, rotation: f32) void {
     
     const sprite_rect = sdl3.rect.Rect(f32) { 
         .x = @as(f32, @floatFromInt(texture.bounds.x)), 
@@ -80,7 +84,13 @@ pub fn drawTexture(texture: TW.Texture, pos: TW.Vec2(f32), color: TW.Color) void
     
     assert.ok(internal_texture.sdl_texture.setColorMod(color.r, color.g, color.b));
 
-    assert.ok(internal.sdl_renderer.renderTexture(internal_texture.sdl_texture, sprite_rect, dst_rect));
+    assert.ok(internal.sdl_renderer.renderTextureRotated(
+        internal_texture.sdl_texture, 
+        sprite_rect, 
+        dst_rect, 
+        rotation, 
+        null, 
+        .{ }));
 }
 
 pub fn drawText(bounds: TW.Rect(f32), fontName: []const u8, text: []const u8, color: TW.Color) void {

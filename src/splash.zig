@@ -76,7 +76,8 @@ pub fn update() void {
             .x = 0,
             .y = 0,
         },
-        TW.Color.from(255, 255, 255, 255));
+        TW.Color.from(255, 255, 255, 255),
+        0);
 }
 
 fn End() void {
