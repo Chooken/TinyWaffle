@@ -119,7 +119,7 @@ pub fn worldToScreenspace(from: TW.Vec2(f32)) TW.Vec2 (f32)
 
     return .{
         .x = @as(f32, @floatFromInt(renderwidth)) / 2 - unitSize / 2 + from.x * unitSize,
-        .y = @as(f32, @floatFromInt(renderheight)) / 2 - unitSize / 2 + from.y * unitSize,
+        .y = @as(f32, @floatFromInt(renderheight)) / 2 - unitSize / 2 + -from.y * unitSize,
     };
 }
 

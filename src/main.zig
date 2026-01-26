@@ -17,7 +17,7 @@ pub fn on_enter() !void {
 }
 
 pub fn update() !void {
-    TW.Application.quit();
+    TW.Renderer.drawLine(.{ .x = 0, .y = 0 }, .{ .x = 1, .y = 1, }, .Green);
 }
 
 pub fn exit() !void {
