@@ -56,6 +56,148 @@ pub fn drawRect(rect: TW.Rect(f32), color: TW.Color) void {
         .h = rect.h * unitSize }));
 }
 
+pub const TextureBatch = struct {
+
+    atlas: TW.TextureAtlas,
+    batch: std.ArrayList(Instance),
+    vertices: std.ArrayList(sdl3.render.Vertex),
+    indices: std.ArrayList(c_int),
+
+    const Instance = struct {
+        index: usize,
+        position: TW.Vec2(f32),
+        rotation: f32,
+        color: TW.Color,
+    };
+
+    pub fn init(atlas: TW.TextureAtlas) TextureBatch {
+        return .{
+            .atlas = atlas,
+            .batch = .{},
+            .vertices = .{},
+            .indices = .{},
+        };
+    }
+
+    pub fn add(self: *TextureBatch, texture_index: usize, position: TW.Vec2(f32), color: TW.Color, rotation: f32) void {
+        assert.ok(self.batch.append(internal.allocator, .{
+            .index = texture_index,
+            .position = position,
+            .color = color,
+            .rotation = rotation, 
+        }));
+    }
+
+    pub fn render(self: *TextureBatch) void {
+
+        const unitSize = getUnitSize();
+
+        const internal_texture = internal_assets.getInternalTexture(self.atlas.name, internal.allocator) catch {
+            return;
+        };
+
+        const texture_width = internal_texture.sdl_surface.getWidth();
+        const texture_height = internal_texture.sdl_surface.getHeight();
+
+        for (self.batch.items, 0..) |instance, index| {
+
+            const texture = self.atlas.get(instance.index);
+
+            const sprite_rect = sdl3.rect.Rect(f32) { 
+            .x = @as(f32, @floatFromInt(texture.bounds.x)), 
+            .y = @as(f32, @floatFromInt(texture.bounds.y)), 
+            .w = @as(f32, @floatFromInt(texture.bounds.w)), 
+            .h = @as(f32, @floatFromInt(texture.bounds.h))};
+
+            const screenPos = worldToScreenspace(instance.position);
+
+            const dst_rect = sdl3.rect.Rect(f32) { 
+                .x = screenPos.x, 
+                .y = screenPos.y, 
+                .w = unitSize, 
+                .h = unitSize};
+
+            assert.ok(self.vertices.append(internal.allocator, sdl3.render.Vertex{
+                .position = .{ 
+                    .x = dst_rect.x, 
+                    .y = dst_rect.y },
+                .color = .{ 
+                    .r = @as(f32, @floatFromInt(instance.color.r)) / 255, 
+                    .g = @as(f32, @floatFromInt(instance.color.g)) / 255, 
+                    .b = @as(f32, @floatFromInt(instance.color.b)) / 255, 
+                    .a = @as(f32, @floatFromInt(instance.color.a)) / 255, },
+                .tex_coord = .{ 
+                    .x = sprite_rect.x / @as(f32, @floatFromInt(texture_width)), 
+                    .y = sprite_rect.y / @as(f32, @floatFromInt(texture_height))},
+            }));
+
+            assert.ok(self.vertices.append(internal.allocator, sdl3.render.Vertex{
+                .position = .{ 
+                    .x = dst_rect.x, 
+                    .y = dst_rect.y + dst_rect.h },
+                .color = .{ 
+                    .r = @as(f32, @floatFromInt(instance.color.r)) / 255, 
+                    .g = @as(f32, @floatFromInt(instance.color.g)) / 255, 
+                    .b = @as(f32, @floatFromInt(instance.color.b)) / 255, 
+                    .a = @as(f32, @floatFromInt(instance.color.a)) / 255, },
+                .tex_coord = .{ 
+                    .x = sprite_rect.x / @as(f32, @floatFromInt(texture_width)), 
+                    .y = (sprite_rect.y + sprite_rect.h) / @as(f32, @floatFromInt(texture_height))},
+            }));
+
+            assert.ok(self.vertices.append(internal.allocator, sdl3.render.Vertex{
+                .position = .{ 
+                    .x = dst_rect.x + dst_rect.w, 
+                    .y = dst_rect.y + dst_rect.h },
+                .color = .{ 
+                    .r = @as(f32, @floatFromInt(instance.color.r)) / 255, 
+                    .g = @as(f32, @floatFromInt(instance.color.g)) / 255, 
+                    .b = @as(f32, @floatFromInt(instance.color.b)) / 255, 
+                    .a = @as(f32, @floatFromInt(instance.color.a)) / 255, },
+                .tex_coord = .{ 
+                    .x = (sprite_rect.x + sprite_rect.w) / @as(f32, @floatFromInt(texture_width)), 
+                    .y = (sprite_rect.y + sprite_rect.h) / @as(f32, @floatFromInt(texture_height))},
+            }));
+
+            assert.ok(self.vertices.append(internal.allocator, sdl3.render.Vertex{
+                .position = .{ 
+                    .x = dst_rect.x + dst_rect.w, 
+                    .y = dst_rect.y },
+                .color = .{ 
+                    .r = @as(f32, @floatFromInt(instance.color.r)) / 255, 
+                    .g = @as(f32, @floatFromInt(instance.color.g)) / 255, 
+                    .b = @as(f32, @floatFromInt(instance.color.b)) / 255, 
+                    .a = @as(f32, @floatFromInt(instance.color.a)) / 255, },
+                .tex_coord = .{ 
+                    .x = (sprite_rect.x + sprite_rect.w) / @as(f32, @floatFromInt(texture_width)), 
+                    .y = sprite_rect.y / @as(f32, @floatFromInt(texture_height))},
+            }));
+
+            assert.ok(self.indices.append(internal.allocator, @intCast(index * 4)));
+            assert.ok(self.indices.append(internal.allocator, @intCast(index * 4 + 1)));
+            assert.ok(self.indices.append(internal.allocator, @intCast(index * 4 + 2)));
+            assert.ok(self.indices.append(internal.allocator, @intCast(index * 4)));
+            assert.ok(self.indices.append(internal.allocator, @intCast(index * 4 + 2)));
+            assert.ok(self.indices.append(internal.allocator, @intCast(index * 4 + 3)));
+        }
+
+        assert.ok(internal.sdl_renderer.renderGeometry(
+            internal_texture.sdl_texture, 
+            self.vertices.items, 
+            self.indices.items));
+
+        self.batch.clearRetainingCapacity();
+        self.vertices.clearRetainingCapacity();
+        self.indices.clearRetainingCapacity();
+    }
+
+    pub fn deinit(self: *TextureBatch) void {
+        self.batch.deinit(internal.allocator);
+        self.vertices.deinit(internal.allocator);
+        self.indices.deinit(internal.allocator);
+    }
+};
+
 pub fn drawTexture(texture: TW.Texture, pos: TW.Vec2(f32), color: TW.Color, rotation: f32) void {
     
     const sprite_rect = sdl3.rect.Rect(f32) { 

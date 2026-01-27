@@ -59,8 +59,6 @@ pub fn run(title: [:0]const u8, width: usize, height: usize, start_scene: root.S
 
     assert.ok(audio.init());
 
-    scene_management.setNext(start_scene);
-
     var gpa: std.heap.GeneralPurposeAllocator(.{}) = .init;
     allocator = gpa.allocator();
     defer {
@@ -83,7 +81,8 @@ pub fn run(title: [:0]const u8, width: usize, height: usize, start_scene: root.S
     assert.ok(assets.init(allocator));
     defer assets.deinit();
 
-    splash.init();
+    splash.first_scene = start_scene;
+    scene_management.setNext(splash.splash_scene);
 
     assert.ok(loop());
 }
@@ -147,15 +146,10 @@ fn loop() !void {
 
         profiling.startScope("Scene Update");
 
-        if (playing_splash) {
-            splash.update();
-        }
-        else {
-            // Call Update Logic
-            scene_management.update() catch |err| {
-                std.debug.print("An error occured in a scene function: {s}\n", .{@errorName(err)});
-            };
-        }
+        // Call Update Logic
+        scene_management.update() catch |err| {
+            std.debug.print("An error occured in a scene function: {s}\n", .{@errorName(err)});
+        };
 
         profiling.endScope("Scene Update");
 

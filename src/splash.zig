@@ -3,20 +3,34 @@ const TW = @import("root.zig");
 const internal = @import("internal.zig");
 const profiling = @import("profiling.zig");
 
-pub fn init() void {
+pub const splash_scene = TW.SceneManagement.Scene {
+    .on_enter = init,
+    .on_update = update,
+    .on_exit = exit,
+};
+
+pub var first_scene: ?TW.SceneManagement.Scene = null;
+
+var texture_batch: TW.Renderer.TextureBatch = undefined;
+
+pub fn init() !void {
     TW.Assert.ok(internal.assets.addInternalTextureFromData("splash", splashAnimation));
     TW.Renderer.setFov(3);
+
+    const atlas: TW.TextureAtlas = TW.Assert.ok(TW.Assets.getTextureAtlas("splash", TW.Vec2(usize).from(18, 1)));
+    texture_batch = TW.Renderer.TextureBatch.init(atlas);
 }
 
 var tick: f32 = 0;
 
-pub fn update() void {
+pub fn update() !void {
 
     tick += TW.Time.getDeltaTime() * 10;
 
     if (tick > 20) {
-        TW.Renderer.setFov(17);
-        internal.playing_splash = false;
+        if (first_scene) |scene|{
+            internal.scene_management.setNext(scene);
+        } 
         return;
     }
 
@@ -69,18 +83,16 @@ pub fn update() void {
         },
     }
 
-    var atlas: TW.TextureAtlas = TW.Assert.ok(TW.Assets.getTextureAtlas("splash", TW.Vec2(usize).from(18, 1)));
-
-    TW.Renderer.drawTexture(
-        atlas.get(frame), 
-        .{
-            .x = 0,
-            .y = 0,
-        },
-        TW.Color.from(255, 255, 255, 255),
+    texture_batch.add(
+        frame, 
+        TW.Vec2(f32).from(0, 0), 
+        TW.Color.from(255, 255, 255, 255), 
         0);
+
+    texture_batch.render();
 }
 
-fn End() void {
+fn exit() !void {
     TW.Renderer.setFov(17);
+    texture_batch.deinit();
 }
