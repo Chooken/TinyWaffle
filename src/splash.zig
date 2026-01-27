@@ -87,7 +87,7 @@ pub fn update() !void {
         frame, 
         TW.Vec2(f32).from(0, 0), 
         TW.Color.from(255, 255, 255, 255), 
-        0);
+        1);
 
     texture_batch.render();
 }

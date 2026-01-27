@@ -66,7 +66,7 @@ pub const TextureBatch = struct {
     const Instance = struct {
         index: usize,
         position: TW.Vec2(f32),
-        rotation: f32,
+        rotation: usize,
         color: TW.Color,
     };
 
@@ -79,7 +79,7 @@ pub const TextureBatch = struct {
         };
     }
 
-    pub fn add(self: *TextureBatch, texture_index: usize, position: TW.Vec2(f32), color: TW.Color, rotation: f32) void {
+    pub fn add(self: *TextureBatch, texture_index: usize, position: TW.Vec2(f32), color: TW.Color, rotation: usize) void {
         assert.ok(self.batch.append(internal.allocator, .{
             .index = texture_index,
             .position = position,
@@ -111,6 +111,25 @@ pub const TextureBatch = struct {
 
             const screenPos = worldToScreenspace(instance.position);
 
+            const uvs = [_]TW.Vec2(f32){
+                .{ 
+                    .x = sprite_rect.x / @as(f32, @floatFromInt(texture_width)),
+                    .y = sprite_rect.y / @as(f32, @floatFromInt(texture_width))
+                },
+                .{ 
+                    .x = sprite_rect.x / @as(f32, @floatFromInt(texture_width)), 
+                    .y = (sprite_rect.y + sprite_rect.h) / @as(f32, @floatFromInt(texture_height)),
+                },
+                .{ 
+                    .x = (sprite_rect.x + sprite_rect.w) / @as(f32, @floatFromInt(texture_width)), 
+                    .y = (sprite_rect.y + sprite_rect.h) / @as(f32, @floatFromInt(texture_height))
+                },
+                .{ 
+                    .x = (sprite_rect.x + sprite_rect.w) / @as(f32, @floatFromInt(texture_width)), 
+                    .y = sprite_rect.y / @as(f32, @floatFromInt(texture_height))
+                },
+            };
+
             const dst_rect = sdl3.rect.Rect(f32) { 
                 .x = screenPos.x, 
                 .y = screenPos.y, 
@@ -127,8 +146,8 @@ pub const TextureBatch = struct {
                     .b = @as(f32, @floatFromInt(instance.color.b)) / 255, 
                     .a = @as(f32, @floatFromInt(instance.color.a)) / 255, },
                 .tex_coord = .{ 
-                    .x = sprite_rect.x / @as(f32, @floatFromInt(texture_width)), 
-                    .y = sprite_rect.y / @as(f32, @floatFromInt(texture_height))},
+                    .x = uvs[(0 + instance.rotation) % 4].x, 
+                    .y = uvs[(0 + instance.rotation) % 4].y},
             }));
 
             assert.ok(self.vertices.append(internal.allocator, sdl3.render.Vertex{
@@ -141,8 +160,8 @@ pub const TextureBatch = struct {
                     .b = @as(f32, @floatFromInt(instance.color.b)) / 255, 
                     .a = @as(f32, @floatFromInt(instance.color.a)) / 255, },
                 .tex_coord = .{ 
-                    .x = sprite_rect.x / @as(f32, @floatFromInt(texture_width)), 
-                    .y = (sprite_rect.y + sprite_rect.h) / @as(f32, @floatFromInt(texture_height))},
+                    .x = uvs[(1 + instance.rotation) % 4].x, 
+                    .y = uvs[(1 + instance.rotation) % 4].y},
             }));
 
             assert.ok(self.vertices.append(internal.allocator, sdl3.render.Vertex{
@@ -155,8 +174,8 @@ pub const TextureBatch = struct {
                     .b = @as(f32, @floatFromInt(instance.color.b)) / 255, 
                     .a = @as(f32, @floatFromInt(instance.color.a)) / 255, },
                 .tex_coord = .{ 
-                    .x = (sprite_rect.x + sprite_rect.w) / @as(f32, @floatFromInt(texture_width)), 
-                    .y = (sprite_rect.y + sprite_rect.h) / @as(f32, @floatFromInt(texture_height))},
+                    .x = uvs[(2 + instance.rotation) % 4].x, 
+                    .y = uvs[(2 + instance.rotation) % 4].y},
             }));
 
             assert.ok(self.vertices.append(internal.allocator, sdl3.render.Vertex{
@@ -169,8 +188,8 @@ pub const TextureBatch = struct {
                     .b = @as(f32, @floatFromInt(instance.color.b)) / 255, 
                     .a = @as(f32, @floatFromInt(instance.color.a)) / 255, },
                 .tex_coord = .{ 
-                    .x = (sprite_rect.x + sprite_rect.w) / @as(f32, @floatFromInt(texture_width)), 
-                    .y = sprite_rect.y / @as(f32, @floatFromInt(texture_height))},
+                    .x = uvs[(3 + instance.rotation) % 4].x, 
+                    .y = uvs[(3 + instance.rotation) % 4].y},
             }));
 
             assert.ok(self.indices.append(internal.allocator, @intCast(index * 4)));
