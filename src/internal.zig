@@ -8,6 +8,8 @@ pub const audio = @import("audio_internal.zig");
 pub const assets = @import("assets_internal.zig");
 pub const scene_management = @import("scene_internal.zig");
 
+const waffle_debug_font: []const u8 = @embedFile("./included_files/RobotoMono-VariableFont_wght.ttf");
+
 pub var allocator: std.mem.Allocator = undefined;
 
 pub var playing_splash: bool = true;
@@ -80,6 +82,8 @@ pub fn run(title: [:0]const u8, width: usize, height: usize, start_scene: root.S
 
     assert.ok(assets.init(allocator));
     defer assets.deinit();
+
+    assert.ok(assets.addInternalFontFromData("Waffle_Debug_", waffle_debug_font));
 
     splash.first_scene = start_scene;
     scene_management.setNext(splash.splash_scene);
@@ -167,10 +171,12 @@ fn loop() !void {
 
         profiling.endScope("Total");
 
+        profiling.renderProfiler();
+
         // Preset Framebuffer.
         assert.ok(sdl_renderer.present());
 
-        profiling.printTimings();
+        //profiling.printTimings();
     }
 
     scene_management.exit();

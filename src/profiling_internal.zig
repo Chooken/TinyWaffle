@@ -48,6 +48,32 @@ pub fn endScope(name: []const u8) void {
     }
 }
 
+pub fn renderProfiler() void {
+
+    const font_size = 24;
+
+    for (scopeTimes.items, 0..) |time, index| {
+
+        const string = root.Assert.ok(std.fmt.allocPrint(
+            internal.allocator, 
+            "{s}: {d}ms\n", 
+            .{time.name, @as(f32, @floatFromInt(time.time)) / std.time.ns_per_ms}));
+
+        root.Renderer.drawScreenspaceText(
+            .{ 
+                .w = 1000, 
+                .h = 1000,
+                .x = 10 + @as(f32, @floatFromInt(font_size * time.depth)),
+                .y = @floatFromInt(index * (font_size + 6)), },
+            "Waffle_Debug_",
+            string,
+            .White,
+            font_size,
+        );
+        internal.allocator.free(string);
+    }
+}
+
 pub fn printTimings() void {
 
     std.debug.print("------- Timings --------\n", .{});

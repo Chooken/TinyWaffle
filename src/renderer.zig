@@ -272,6 +272,20 @@ pub fn drawText(bounds: TW.Rect(f32), fontName: []const u8, text: []const u8, co
     assert.ok(sdl3.ttf.drawRendererText(sdl_text, position.x, position.y));
 }
 
+pub fn drawScreenspaceText(bounds: TW.Rect(f32), fontName: []const u8, text: []const u8, color: TW.Color, size: f32) void {
+
+    const font: *internal_assets.InternalFont = assert.ok(internal_assets.getInternalFont(fontName, internal.allocator));
+    assert.ok(font.sdl_font.setSize(size));
+
+    // Need to Cache.
+    const sdl_text: sdl3.ttf.Text = assert.ok(sdl3.ttf.Text.init(.{ .value = internal.sdl_text_engine.value }, font.sdl_font, text));
+    assert.ok(sdl_text.setWrapWidth(@intFromFloat(bounds.w)));
+    assert.ok(sdl_text.setColor(color.r, color.g, color.b, color.a));
+    defer sdl_text.deinit();
+
+    assert.ok(sdl3.ttf.drawRendererText(sdl_text, bounds.x, bounds.y));
+}
+
 pub fn getUnitSize() f32 {
     _, const renderheight = internal.sdl_renderer.getOutputSize() catch {
         return 1;

@@ -85,6 +85,17 @@ pub fn getInternalFont(name: []const u8, allocator: std.mem.Allocator) !*Interna
     return fonts.getPtr(name).?;
 }
 
+pub fn addInternalFontFromData(name: []const u8, data: []const u8) !void {
+
+    const reader = try sdl3.io_stream.Stream.initFromConstMem(data);
+
+    const internal_font = InternalFont {
+        .sdl_font = try sdl3.ttf.Font.initFromIO(reader, true, 16),
+    };
+
+    assert.ok(fonts.put(name, internal_font));
+}
+
 pub fn removeInternalTexture(name: []const u8) void
 {
     if (textures.get(name)) |texture| {
