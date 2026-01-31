@@ -17,7 +17,9 @@ pub fn on_enter() !void {
 }
 
 pub fn update() !void {
+    TW.Profiling.startScope("test");
     TW.Renderer.drawLine(.{ .x = 0, .y = 0 }, .{ .x = 1, .y = 1, }, .Green);
+    TW.Profiling.endScope("test");
 }
 
 pub fn exit() !void {

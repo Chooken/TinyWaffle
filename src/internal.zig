@@ -95,14 +95,22 @@ fn loop() !void {
 
         profiling.reset();
 
+        profiling.startScope("Total");
+
         // Events
         profiling.startScope("Events");
+
+        profiling.startScope("Reset Key States");
 
         var iter = input.valueIterator();
 
         while (iter.next()) |value| {
             value.down_first_frame = false;
         }
+
+        profiling.endScope("Reset Key States");
+
+        profiling.startScope("Poll Window Events");
 
         while (sdl3.events.poll()) |event| {
             switch (event) {
@@ -130,6 +138,8 @@ fn loop() !void {
             }
         }
 
+        profiling.endScope("Poll Window Events");
+
         profiling.endScope("Events");
 
         profiling.startScope("App Update");
@@ -154,6 +164,8 @@ fn loop() !void {
         profiling.endScope("Scene Update");
 
         profiling.endScope("App Update");
+
+        profiling.endScope("Total");
 
         // Preset Framebuffer.
         assert.ok(sdl_renderer.present());

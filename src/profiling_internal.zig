@@ -52,24 +52,35 @@ pub fn printTimings() void {
 
     std.debug.print("------- Timings --------\n", .{});
 
-    var total: u64 = 0;
+    var active_depths: u64 = 0x0;
 
     for (scopeTimes.items) |time| {
 
-        if (time.depth == 0)
-        {
-            total += time.time;
-        }
-
         for (0..time.depth) |index| {
+
+            const current_depth_active = ((active_depths >> @intCast(index + 1)) & 0x1) == 1;
+
             if (index == time.depth - 1) {
-                std.debug.print(" ┌─ ", .{}); 
-            } else std.debug.print("    ", .{});
+
+                if (!current_depth_active)
+                {
+                    std.debug.print(" ┌─ ", .{}); 
+                }
+                else {
+                    std.debug.print(" ├─ ", .{});
+                }
+
+            } else {
+                
+                if (current_depth_active) {
+                    std.debug.print(" │  ", .{});
+                }
+                else {
+                    std.debug.print("    ", .{});
+                }
+            } 
         }
         std.debug.print("{s}: {d}ms\n", .{time.name, @as(f32, @floatFromInt(time.time)) / std.time.ns_per_ms});
+        active_depths = (active_depths & ~((~@as(u64, 0x0)) << @intCast(time.depth))) | (@as(u64, 0x1) << @intCast(time.depth));
     }
-
-    std.debug.print("\n", .{});
-    std.debug.print("Total: {d}ms\n", .{@as(f32, @floatFromInt(total)) / std.time.ns_per_ms});
-    std.debug.print("\n", .{});
 }
