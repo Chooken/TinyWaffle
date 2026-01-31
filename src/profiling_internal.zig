@@ -80,7 +80,7 @@ pub fn printTimings() void {
                 }
             } 
         }
-        std.debug.print("{s}: {d}ms\n", .{time.name, @as(f32, @floatFromInt(time.time)) / std.time.ns_per_ms});
+        std.debug.print("{s}: {d}ms\n\n", .{time.name, @as(f32, @floatFromInt(time.time)) / std.time.ns_per_ms});
         active_depths = (active_depths & ~((~@as(u64, 0x0)) << @intCast(time.depth))) | (@as(u64, 0x1) << @intCast(time.depth));
     }
 }
