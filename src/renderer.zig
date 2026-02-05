@@ -2,7 +2,6 @@ const std = @import("std");
 const sdl3 = @import("sdl3");
 const assert = @import("assert.zig");
 const TW = @import("root.zig");
-const internal_assets = @import("assets_internal.zig");
 const internal = @import("internal.zig");
 
 var Fov: f32 = 17;
@@ -21,7 +20,7 @@ pub fn getFov() f32 {
 
 pub fn drawLine(start: TW.Vec2(f32), end: TW.Vec2(f32), color: TW.Color) void {
 
-    assert.ok(internal.sdl_renderer.setDrawColor(.{ 
+    assert.ok(internal.application.sdl_renderer.setDrawColor(.{ 
         .r = color.r, 
         .g = color.g, 
         .b = color.b, 
@@ -30,14 +29,14 @@ pub fn drawLine(start: TW.Vec2(f32), end: TW.Vec2(f32), color: TW.Color) void {
     const screenPosStart = worldToScreenspace(start);
     const screenPosEnd = worldToScreenspace(end);
 
-    assert.ok(internal.sdl_renderer.renderLine(
+    assert.ok(internal.application.sdl_renderer.renderLine(
         .{ .x = screenPosStart.x, .y = screenPosStart.y },
         .{ .x = screenPosEnd.x, .y = screenPosEnd.y }));
 }
 
 pub fn drawRect(rect: TW.Rect(f32), color: TW.Color) void {
 
-    assert.ok(internal.sdl_renderer.setDrawColor(.{ 
+    assert.ok(internal.application.sdl_renderer.setDrawColor(.{ 
         .r = color.r, 
         .g = color.g, 
         .b = color.b, 
@@ -49,11 +48,26 @@ pub fn drawRect(rect: TW.Rect(f32), color: TW.Color) void {
         .y = rect.y,
     });
 
-    assert.ok(internal.sdl_renderer.renderFillRect(.{
+    assert.ok(internal.application.sdl_renderer.renderFillRect(.{
         .x = screenPos.x,
         .y = screenPos.y,
         .w = rect.w * unitSize,
         .h = rect.h * unitSize }));
+}
+
+pub fn drawScreenspaceRect(rect: TW.Rect(f32), color: TW.Color) void {
+
+    assert.ok(internal.application.sdl_renderer.setDrawColor(.{ 
+        .r = color.r, 
+        .g = color.g, 
+        .b = color.b, 
+        .a = color.a }));
+
+    assert.ok(internal.application.sdl_renderer.renderFillRect(.{
+        .x = rect.x,
+        .y = rect.y,
+        .w = rect.w,
+        .h = rect.h }));
 }
 
 pub const TextureBatch = struct {
@@ -92,7 +106,7 @@ pub const TextureBatch = struct {
 
         const unitSize = getUnitSize();
 
-        const internal_texture = internal_assets.getInternalTexture(self.atlas.name, internal.allocator) catch {
+        const internal_texture = internal.assets.getInternalTexture(self.atlas.name, internal.allocator) catch {
             return;
         };
 
@@ -200,7 +214,7 @@ pub const TextureBatch = struct {
             assert.ok(self.indices.append(internal.allocator, @intCast(index * 4 + 3)));
         }
 
-        assert.ok(internal.sdl_renderer.renderGeometry(
+        assert.ok(internal.application.sdl_renderer.renderGeometry(
             internal_texture.sdl_texture, 
             self.vertices.items, 
             self.indices.items));
@@ -235,7 +249,7 @@ pub fn drawTexture(texture: TW.Texture, pos: TW.Vec2(f32), color: TW.Color, rota
         .w = unitSize, 
         .h = unitSize};
 
-    const internal_texture = internal_assets.getInternalTexture(texture.name, internal.allocator) catch {
+    const internal_texture = internal.assets.getInternalTexture(texture.name, internal.allocator) catch {
         // If fail to load texture draw a pink rect in its place.
         drawRect(
             TW.Rect(f32).from(dst_rect.x, dst_rect.y, dst_rect.w, dst_rect.h), 
@@ -258,11 +272,11 @@ pub fn drawText(bounds: TW.Rect(f32), fontName: []const u8, text: []const u8, co
 
     const unitSize = getUnitSize();
 
-    const font: *internal_assets.InternalFont = assert.ok(internal_assets.getInternalFont(fontName, internal.allocator));
+    const font: *internal.assets.InternalFont = assert.ok(internal.assets.getInternalFont(fontName, internal.allocator));
     assert.ok(font.sdl_font.setSize(0.6 * unitSize));
     
     // Need to Cache.
-    const sdl_text: sdl3.ttf.Text = assert.ok(sdl3.ttf.Text.init(.{ .value = internal.sdl_text_engine.value }, font.sdl_font, text));
+    const sdl_text: sdl3.ttf.Text = assert.ok(sdl3.ttf.Text.init(.{ .value = internal.application.sdl_text_engine.value }, font.sdl_font, text));
     assert.ok(sdl_text.setWrapWidth(@intFromFloat(bounds.w * unitSize)));
     assert.ok(sdl_text.setColor(color.r, color.g, color.b, color.a));
     defer sdl_text.deinit();
@@ -274,11 +288,11 @@ pub fn drawText(bounds: TW.Rect(f32), fontName: []const u8, text: []const u8, co
 
 pub fn drawScreenspaceText(bounds: TW.Rect(f32), fontName: []const u8, text: []const u8, color: TW.Color, size: f32) void {
 
-    const font: *internal_assets.InternalFont = assert.ok(internal_assets.getInternalFont(fontName, internal.allocator));
+    const font: *internal.assets.InternalFont = assert.ok(internal.assets.getInternalFont(fontName, internal.allocator));
     assert.ok(font.sdl_font.setSize(size));
 
     // Need to Cache.
-    const sdl_text: sdl3.ttf.Text = assert.ok(sdl3.ttf.Text.init(.{ .value = internal.sdl_text_engine.value }, font.sdl_font, text));
+    const sdl_text: sdl3.ttf.Text = assert.ok(sdl3.ttf.Text.init(.{ .value = internal.application.sdl_text_engine.value }, font.sdl_font, text));
     assert.ok(sdl_text.setWrapWidth(@intFromFloat(bounds.w)));
     assert.ok(sdl_text.setColor(color.r, color.g, color.b, color.a));
     defer sdl_text.deinit();
@@ -287,7 +301,7 @@ pub fn drawScreenspaceText(bounds: TW.Rect(f32), fontName: []const u8, text: []c
 }
 
 pub fn getUnitSize() f32 {
-    _, const renderheight = internal.sdl_renderer.getOutputSize() catch {
+    _, const renderheight = internal.application.sdl_renderer.getOutputSize() catch {
         return 1;
     };
 
@@ -296,7 +310,7 @@ pub fn getUnitSize() f32 {
 
 pub fn worldToScreenspace(from: TW.Vec2(f32)) TW.Vec2 (f32)
 {
-    const renderwidth, const renderheight = internal.sdl_renderer.getOutputSize() catch {
+    const renderwidth, const renderheight = internal.application.sdl_renderer.getOutputSize() catch {
         return .{ .x = 0, .y = 0 };
     };
 

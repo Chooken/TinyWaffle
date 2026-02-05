@@ -1,16 +1,16 @@
 const std = @import("std");
 const internal = @import("internal.zig");
 
-pub const Assert = @import("assert.zig");
-pub const Application = @import("application.zig");
-pub const Audio = @import("audio.zig");
-pub const Window = @import("window.zig");
-pub const Renderer = @import("renderer.zig");
-pub const Assets = @import("assets.zig");
-pub const Input = @import("input.zig");
-pub const Time = @import("time.zig");
-pub const SceneManagement = @import("scenemanagement.zig");
-pub const Profiling = @import("profiling.zig");
+pub const assert = @import("assert.zig");
+pub const application = @import("application.zig");
+pub const audio = @import("audio.zig");
+pub const window = @import("window.zig");
+pub const renderer = @import("renderer.zig");
+pub const assets = @import("assets.zig");
+pub const input = @import("input.zig");
+pub const time = @import("time.zig");
+pub const scene_management = @import("scenemanagement.zig");
+pub const profiling = @import("profiling.zig");
 
 pub const Color = struct { 
     r: u8,
@@ -150,7 +150,7 @@ pub const Texture = struct {
 
     pub fn getColorAt(self: *const Texture, pos: Vec2(usize)) ?Color
     {
-        var texture: *internal.assets.InternalTexture = Assert.ok(internal.assets.getInternalTexture(self.name, internal.allocator));
+        var texture: *internal.assets.InternalTexture = assert.ok(internal.assets.getInternalTexture(self.name, internal.allocator));
         
         const width, const height = texture.sdl_texture.getSize() catch return null;
 
@@ -163,7 +163,7 @@ pub const Texture = struct {
 
     pub fn setColorAt(self: *const Texture, pos: Vec2(usize), color: Color) void
     {
-        var texture: *internal.assets.InternalTexture = Assert.ok(internal.assets.getInternalTexture(self.name, internal.allocator));
+        var texture: *internal.assets.InternalTexture = assert.ok(internal.assets.getInternalTexture(self.name, internal.allocator));
         
         const width, const height = texture.sdl_texture.getSize() catch return;
 
@@ -215,6 +215,6 @@ pub const TextureAtlas = struct {
     }
 };
 
-pub fn run(title: [:0]const u8, width: usize, height: usize, start_scene: SceneManagement.Scene) void {
-    internal.run(title, width, height, start_scene);
+pub fn run(title: [:0]const u8, width: usize, height: usize, start_scene: scene_management.Scene) void {
+    internal.application.run(title, width, height, start_scene);
 }

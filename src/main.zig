@@ -3,7 +3,7 @@ const TW = @import("TinyWaffle");
 
 pub fn main() !void {
 
-    const scene = TW.SceneManagement.Scene {
+    const scene = TW.scene_management.Scene {
         .on_enter = on_enter,
         .on_update = update,
         .on_exit = exit,
@@ -17,9 +17,9 @@ pub fn on_enter() !void {
 }
 
 pub fn update() !void {
-    TW.Profiling.startScope("test");
-    TW.Renderer.drawLine(.{ .x = 0, .y = 0 }, .{ .x = 1, .y = 1, }, .Green);
-    TW.Profiling.endScope("test");
+    TW.profiling.startScope("test");
+    TW.renderer.drawLine(.{ .x = 0, .y = 0 }, .{ .x = 1, .y = 1, }, .Green);
+    TW.profiling.endScope("test");
 }
 
 pub fn exit() !void {

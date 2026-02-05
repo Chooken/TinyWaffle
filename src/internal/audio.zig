@@ -1,6 +1,6 @@
 const std = @import("std");
 const sdl3 = @import("sdl3");
-const assert = @import("assert.zig");
+const assert = @import("../assert.zig");
 
 pub const Waveform = enum {
     Sin,
@@ -60,6 +60,13 @@ pub fn init() !void {
     try audioStream2.resumeDevice();
     try audioStream3.resumeDevice();
     try audioStream4.resumeDevice();
+}
+
+pub fn deinit() void {
+    audioStream1.deinit();
+    audioStream2.deinit();
+    audioStream3.deinit();
+    audioStream4.deinit();
 }
 
 const SAMPLE_RATE = 8000.0;

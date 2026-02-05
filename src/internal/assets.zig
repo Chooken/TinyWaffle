@@ -1,7 +1,7 @@
 const std = @import("std");
 const sdl3 = @import("sdl3");
-const assert = @import("assert.zig");
-const internal = @import("internal.zig");
+const assert = @import("../assert.zig");
+const internal = @import("../internal.zig");
 
 pub const InternalTexture = struct {
     sdl_surface: sdl3.surface.Surface,
@@ -15,9 +15,9 @@ pub const InternalFont = struct {
 pub var textures: std.StringHashMap(InternalTexture) = undefined;
 pub var fonts: std.StringHashMap(InternalFont) = undefined;
 
-pub fn init(allocator: std.mem.Allocator) !void {
-    textures = std.StringHashMap(InternalTexture).init(allocator);
-    fonts = std.StringHashMap(InternalFont).init(allocator);
+pub fn init() !void {
+    textures = std.StringHashMap(InternalTexture).init(internal.allocator);
+    fonts = std.StringHashMap(InternalFont).init(internal.allocator);
 }
 
 pub fn deinit() void {
@@ -29,12 +29,12 @@ pub fn getInternalTexture(name: []const u8, allocator: std.mem.Allocator) !*Inte
 
     if (!textures.contains(name))
     {   
-        const path: [:0]u8 = std.fmt.allocPrintSentinel(allocator, "{s}/assets/{s}", .{ internal.application_path, name}, 0) catch unreachable;
+        const path: [:0]u8 = std.fmt.allocPrintSentinel(allocator, "{s}/assets/{s}", .{ internal.application.path, name}, 0) catch unreachable;
         defer allocator.free(path);
 
         const surface = try sdl3.image.loadFile(path);
 
-        const texture = try sdl3.render.Texture.init(internal.sdl_renderer, surface.getFormat().?, .streaming, surface.getWidth(), surface.getHeight());
+        const texture = try sdl3.render.Texture.init(internal.application.sdl_renderer, surface.getFormat().?, .streaming, surface.getWidth(), surface.getHeight());
 
         try texture.update(null, @ptrCast(surface.getPixels().?), surface.getPitch());
 
@@ -56,7 +56,7 @@ pub fn addInternalTextureFromData(name: []const u8, data: []const u8) !void {
 
     const surface = try sdl3.image.loadPngIo(reader);
 
-    const texture = try sdl3.render.Texture.init(internal.sdl_renderer, surface.getFormat().?, .streaming, surface.getWidth(), surface.getHeight());
+    const texture = try sdl3.render.Texture.init(internal.application.sdl_renderer, surface.getFormat().?, .streaming, surface.getWidth(), surface.getHeight());
 
     try texture.update(null, @ptrCast(surface.getPixels().?), surface.getPitch());
 
@@ -72,7 +72,7 @@ pub fn addInternalTextureFromData(name: []const u8, data: []const u8) !void {
 pub fn getInternalFont(name: []const u8, allocator: std.mem.Allocator) !*InternalFont {
      if (!fonts.contains(name))
     {   
-        const path: [:0]u8 = std.fmt.allocPrintSentinel(allocator, "{s}/assets/{s}", .{ internal.application_path, name}, 0) catch unreachable;
+        const path: [:0]u8 = std.fmt.allocPrintSentinel(allocator, "{s}/assets/{s}", .{ internal.application.path, name}, 0) catch unreachable;
         defer allocator.free(path);
 
         const internal_font = InternalFont {

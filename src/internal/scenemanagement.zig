@@ -1,9 +1,9 @@
-const root = @import("root.zig");
+const root = @import("../root.zig");
 
-pub var active_scene: ?root.SceneManagement.Scene = null;
-pub var next_scene: ?root.SceneManagement.Scene = null;
+pub var active_scene: ?root.scene_management.Scene = null;
+pub var next_scene: ?root.scene_management.Scene = null;
 
-pub fn setNext(scene: root.SceneManagement.Scene) void {
+pub fn setNext(scene: root.scene_management.Scene) void {
     next_scene = scene;
 }
 
@@ -27,6 +27,6 @@ pub fn update() !void {
 
 pub fn exit() void {
     if (active_scene) |scene| {
-        root.Assert.ok(scene.on_exit());
+        root.assert.ok(scene.on_exit());
     }
 }
