@@ -323,7 +323,7 @@ pub fn worldToScreenspace(from: TW.Vec2(f32)) TW.Vec2 (f32)
 }
 
 pub fn getScreenRect() TW.Rect(f32) {
-    const renderwidth, const renderheight = internal.sdl_renderer.getOutputSize() catch {
+    const renderwidth, const renderheight = internal.application.sdl_renderer.getOutputSize() catch {
         return .{ .x = 0, .y = 0, .w = 0, .h = 0 };
     };
 
