@@ -7,13 +7,22 @@ pub const scene_management = @import("internal/scenemanagement.zig");
 pub const input = @import("internal/input.zig");
 pub const assert = @import("assert.zig");
 
-var gpa: std.heap.GeneralPurposeAllocator(.{}) = .init;
+var gpa: std.heap.GeneralPurposeAllocator(.{ }) = .init;
 pub var allocator: std.mem.Allocator = undefined; 
 
-pub fn init() !void {
-
+pub fn initAllocator() !void {
     allocator = gpa.allocator();
+}
 
+pub fn deinitAllocator() void {
+    const check = gpa.deinit();
+    if (check == .leak)
+    {
+        std.debug.print("Leaked\n", .{});
+    }
+}
+
+pub fn init() !void {
     try assets.init();
     try input.init();
     try profiling.init();
@@ -25,10 +34,4 @@ pub fn deinit() void {
     input.deinit();
     profiling.deinit();
     audio.deinit();
-
-    const check = gpa.deinit();
-    if (check == .leak)
-    {
-        std.debug.print("Leaked\n", .{});
-    }
 }

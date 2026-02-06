@@ -18,7 +18,8 @@ pub var clear_color: root.Color = root.Color.Black;
 pub var last_frame_time: f32 = 0.016;
 
 pub fn run(title: [:0]const u8, width: usize, height: usize, start_scene: root.scene_management.Scene) void {
-    defer sdl3.shutdown();
+    assert.ok(internal.initAllocator());
+    defer internal.deinitAllocator();
 
     const initFlags = sdl3.InitFlags { 
         .video = true, 
@@ -28,6 +29,7 @@ pub fn run(title: [:0]const u8, width: usize, height: usize, start_scene: root.s
 
     assert.ok(sdl3.init(initFlags));
     assert.ok(sdl3.ttf.init());
+    defer sdl3.shutdown();
 
     sdl_window, sdl_renderer = assert.ok(sdl3.render.Renderer.initWithWindow(
         title, 
