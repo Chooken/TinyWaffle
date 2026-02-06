@@ -267,6 +267,7 @@ pub const KeyState = struct {
 };
 
 var key_states: std.AutoHashMap(sdl3.keycode.Keycode, KeyState) = undefined;
+var keyboard_buffer: std.ArrayList(u8) = .{};
 
 pub fn init() !void {
     key_states = std.AutoHashMap(sdl3.keycode.Keycode, KeyState).init(internal.allocator);
@@ -274,6 +275,7 @@ pub fn init() !void {
 
 pub fn deinit() void {
     key_states.deinit();
+    keyboard_buffer.deinit(internal.allocator);
 }
 
 pub fn getKeyState(key: Keycode) ?KeyState {
@@ -310,4 +312,28 @@ pub fn onKeyUpEvent(event: sdl3.events.Keyboard) void {
         var state = key_states.getOrPut(key) catch unreachable;
         state.value_ptr.down = false;
     }
+}
+
+pub fn startKeyboardCapture() void {
+    internal.assert.ok(sdl3.keyboard.startTextInput(internal.application.sdl_window));
+}
+
+pub fn stopKeyboardCapture() void {
+    internal.assert.ok(sdl3.keyboard.stopTextInput(internal.application.sdl_window));
+}
+
+pub fn resetKeyboardInput() void {
+    keyboard_buffer.clearRetainingCapacity();
+}
+
+pub fn getKeyboardInput() ?[]const u8 {
+    if (keyboard_buffer.items.len == 0)
+    {
+        return null;
+    }
+    return keyboard_buffer.items;
+}
+
+pub fn addToKeyboardBuffer(span: []const u8) void {
+    internal.assert.ok(keyboard_buffer.appendSlice(internal.allocator, span));
 }

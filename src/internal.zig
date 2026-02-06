@@ -5,6 +5,7 @@ pub const profiling = @import("internal/profiling.zig");
 pub const audio = @import("internal/audio.zig");
 pub const scene_management = @import("internal/scenemanagement.zig");
 pub const input = @import("internal/input.zig");
+pub const assert = @import("assert.zig");
 
 var gpa: std.heap.GeneralPurposeAllocator(.{}) = .init;
 pub var allocator: std.mem.Allocator = undefined; 

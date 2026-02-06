@@ -74,6 +74,7 @@ fn loop() !void {
         internal.profiling.startScope("Reset Key States");
 
         internal.input.resetKeyStates();
+        internal.input.resetKeyboardInput();
 
         internal.profiling.endScope("Reset Key States");
 
@@ -86,6 +87,9 @@ fn loop() !void {
                 },
                 .key_up => |key_event| {
                     internal.input.onKeyUpEvent(key_event);
+                },
+                .text_input => |text_event| {
+                    internal.input.addToKeyboardBuffer(text_event.text);
                 },
                 .quit => quit(),
                 .terminating => quit(),
