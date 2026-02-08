@@ -259,7 +259,7 @@ pub fn drawTexture(texture: TW.Texture, pos: TW.Vec2(f32), color: TW.Color, rota
     
     assert.ok(internal_texture.sdl_texture.setColorMod(color.r, color.g, color.b));
 
-    assert.ok(internal.sdl_renderer.renderTextureRotated(
+    assert.ok(internal.application.sdl_renderer.renderTextureRotated(
         internal_texture.sdl_texture, 
         sprite_rect, 
         dst_rect, 
