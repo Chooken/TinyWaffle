@@ -7,14 +7,18 @@ pub const Mouse = struct {
     position: root.Vec2(f32),
     delta: root.Vec2(f32), 
     left_pressed: bool,
+    left_down: bool,
     right_pressed: bool,
+    right_down: bool,
 };
 
 pub var mouse = Mouse {
     .position = .{ .x = 0, .y = 0 },
     .delta = .{ .x = 0, .y = 0 },
     .left_pressed = false,
+    .left_down = false,
     .right_pressed = false,
+    .right_down = false,
 };
 
 pub const Keycode = enum(sdl3.c.SDL_Keycode) {
@@ -324,8 +328,14 @@ pub fn onMouseMotion(event: sdl3.events.MouseMotion) void {
 
 pub fn onMouseEvent(event: sdl3.events.MouseButton) void {
     switch (event.button) {
-        .left => mouse.left_pressed = event.down,
-        .right => mouse.right_pressed = event.down,
+        .left => { 
+            mouse.left_down = event.down;
+            mouse.left_pressed = event.down; 
+        },
+        .right => {
+            mouse.right_down = event.down;
+            mouse.right_pressed = event.down; 
+        },
         else => {},
     }
 }
