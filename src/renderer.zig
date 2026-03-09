@@ -104,6 +104,10 @@ pub const TextureBatch = struct {
 
     pub fn render(self: *TextureBatch) void {
 
+        if (self.batch.items.len == 0) {
+            return;
+        }
+
         const unitSize = getUnitSize();
 
         const internal_texture = internal.assets.getInternalTexture(self.atlas.name, internal.allocator) catch {
