@@ -105,8 +105,8 @@ pub fn Rect(comptime T: type) type {
             const self_min = self.min();
             const self_max = self.max();
 
-            if (other.x < self_min.x or other.y <= self_min.y or 
-                other.x > self_max.x or other.y >= self_max.y)
+            if (other.x < self_min.x or other.y < self_min.y or 
+                other.x >= self_max.x or other.y >= self_max.y)
             {
                 return false;
             }
