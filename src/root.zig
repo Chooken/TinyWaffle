@@ -101,6 +101,19 @@ pub fn Rect(comptime T: type) type {
             };
         }
 
+        pub fn contains(self: *const Rect(T), other: Vec2(T)) bool {
+            const self_min = self.min();
+            const self_max = self.max();
+
+            if (other.x < self_min.x or other.y < self_min.y or 
+                other.x > self_max.x or other.y > self_max.y)
+            {
+                return false;
+            }
+
+            return true;
+        }
+
         pub fn overlaps(self: *const Rect(T), other: Rect(T)) bool {
             const self_min = self.min();
             const self_max = self.max();
