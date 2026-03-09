@@ -14,7 +14,17 @@ const average_size = 100;
 var values: [average_size]f32 = undefined;
 var current: usize = 0;
 
+var show_profiler: bool = false;
+
+pub fn toggleProfiler() void {
+    show_profiler = !show_profiler;
+}
+
 pub fn renderProfiler() void {
+
+    if (!show_profiler) {
+        return;
+    }
 
     const font_size = 24;
 
