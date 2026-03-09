@@ -326,6 +326,7 @@ pub fn onMouseEvent(event: sdl3.events.MouseButton) void {
     switch (event.button) {
         .left => mouse.left_pressed = event.down,
         .right => mouse.right_pressed = event.down,
+        else => {},
     }
 }
 
