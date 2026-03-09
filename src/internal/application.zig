@@ -84,8 +84,17 @@ fn loop() !void {
 
         while (sdl3.events.poll()) |event| {
             switch (event) {
+                .mouse_button_down => |mouse_event| {
+                    internal.input.onMouseEvent(mouse_event);
+                },
+                .mouse_button_up => |mouse_event| {
+                    internal.input.onMouseEvent(mouse_event);
+                },
+                .mouse_motion => |mouse_event| {
+                    internal.input.onMouseMotion(mouse_event);
+                },
                 .key_down => |key_event| {
-                    internal.input.OnKeyDownEvent(key_event);
+                    internal.input.onKeyDownEvent(key_event);
                 },
                 .key_up => |key_event| {
                     internal.input.onKeyUpEvent(key_event);

@@ -1,8 +1,15 @@
 const std = @import("std");
+const root = @import("root.zig");
 const internal = @import("internal.zig");
 const sdl3 = @import("sdl3");
 
 pub const Keycode = internal.input.Keycode;
+
+pub const Mouse = internal.input.Mouse;
+
+pub fn getMouseData() Mouse {
+    return internal.input.mouse;
+}
 
 pub fn isKeyDown(key: Keycode) bool {
     if(internal.input.getKeyState(key)) |state|

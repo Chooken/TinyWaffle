@@ -1,6 +1,21 @@
 const std = @import("std");
 const sdl3 = @import("sdl3");
+const root = @import("../root.zig");
 const internal = @import("../internal.zig");
+
+pub const Mouse = struct {
+    position: root.Vec2(f32),
+    delta: root.Vec2(f32), 
+    left_pressed: bool,
+    right_pressed: bool,
+};
+
+pub var mouse = Mouse {
+    .position = .{ .x = 0, .y = 0 },
+    .delta = .{ .x = 0, .y = 0 },
+    .left_pressed = false,
+    .right_pressed = false,
+};
 
 pub const Keycode = enum(sdl3.c.SDL_Keycode) {
     Return = sdl3.c.SDLK_RETURN,
@@ -295,7 +310,26 @@ pub fn resetKeyStates() void {
     }
 }
 
-pub fn OnKeyDownEvent(event: sdl3.events.Keyboard) void {
+pub fn resetMouseState() void {
+    mouse.left_pressed = false;
+    mouse.right_pressed = false;
+}
+
+pub fn onMouseMotion(event: sdl3.events.MouseMotion) void {
+    mouse.position.x = event.x;
+    mouse.position.y = event.y;
+    mouse.delta.x = event.x_rel;
+    mouse.delta.y = event.y_rel;
+}
+
+pub fn onMouseEvent(event: sdl3.events.MouseButton) void {
+    switch (event.button) {
+        .left => mouse.left_pressed = event.down,
+        .right => mouse.right_pressed = event.down,
+    }
+}
+
+pub fn onKeyDownEvent(event: sdl3.events.Keyboard) void {
     if (event.key) |key| {
 
         var state = key_states.getOrPut(key) catch unreachable;
