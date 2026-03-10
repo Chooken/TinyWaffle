@@ -75,6 +75,7 @@ fn loop() !void {
 
         internal.profiling.startScope("Reset Key States");
 
+        internal.input.resetMouseState();
         internal.input.resetKeyStates();
         internal.input.resetKeyboardInput();
 
