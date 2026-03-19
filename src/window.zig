@@ -21,5 +21,5 @@ pub fn SetFullscreen(value: bool) void {
 }
 
 pub fn GetDensity() f32 {
-    return internal.application.sdl_window.getPixelDensity();
+    return tw.assert.ok(internal.application.sdl_window.getPixelDensity());
 }
