@@ -9,7 +9,7 @@ pub const WindowSettings = struct {
 
 pub fn GetSettings() WindowSettings {
 
-    const windowFlags = internal.sdl_window.getFlags();
+    const windowFlags = internal.application.sdl_window.getFlags();
 
     return WindowSettings {
         .fullscreen = windowFlags.fullscreen,
@@ -17,5 +17,9 @@ pub fn GetSettings() WindowSettings {
 }
 
 pub fn SetFullscreen(value: bool) void {
-    assert.ok(internal.sdl_window.setFullscreen(value));
+    assert.ok(internal.application.sdl_window.setFullscreen(value));
+}
+
+pub fn GetDensity() f32 {
+    return internal.application.sdl_window.getPixelDensity();
 }
