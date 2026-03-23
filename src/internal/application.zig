@@ -17,7 +17,14 @@ pub var path: []u8 = undefined;
 pub var clear_color: root.Color = root.Color.Black;
 pub var last_frame_time: f32 = 0.016;
 
-pub fn run(title: [:0]const u8, width: usize, height: usize, start_scene: root.scene_management.Scene) void {
+pub const StartOptions = struct {
+    title: [:0]const u8,
+    width: usize = 800,
+    height: usize = 600,
+    resizeable: bool = false,
+};
+
+pub fn run(start_options: StartOptions, start_scene: root.scene_management.Scene) void {
     assert.ok(internal.initAllocator());
     defer internal.deinitAllocator();
 
@@ -32,10 +39,10 @@ pub fn run(title: [:0]const u8, width: usize, height: usize, start_scene: root.s
     defer sdl3.shutdown();
 
     sdl_window, sdl_renderer = assert.ok(sdl3.render.Renderer.initWithWindow(
-        title, 
-        width, 
-        height, 
-        .{ .high_pixel_density = true, }));
+        start_options.title, 
+        start_options.width, 
+        start_options.height, 
+        .{ .high_pixel_density = true, .resizable = start_options.resizeable }));
     defer {
         sdl_renderer.deinit();
         sdl_window.deinit();
@@ -57,8 +64,30 @@ pub fn run(title: [:0]const u8, width: usize, height: usize, start_scene: root.s
     splash.first_scene = start_scene;
     internal.scene_management.setNext(splash.splash_scene);
 
+    if (start_options.resizeable) {
+        _ = assert.ok(sdl3.events.addWatch(anyopaque, handleResizeEvents, null));
+    }
+
     assert.ok(loop());
 }
+
+fn handleResizeEvents(_: ?*anyopaque, event: *sdl3.events.Event) bool {
+
+    switch (event.*) {
+
+        .window_pixel_size_changed, .window_resized => {
+            internal.scene_management.update() catch |err| {
+                std.debug.print("An error occured in a scene function: {s}\n", .{@errorName(err)});
+            };
+            // Preset Framebuffer.
+            assert.ok(sdl_renderer.present());
+        },
+
+        else => return true,
+    }
+
+    return true;
+} 
 
 fn loop() !void {
 

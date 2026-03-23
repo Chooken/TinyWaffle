@@ -9,7 +9,12 @@ pub fn main() !void {
         .on_exit = exit,
     };  
 
-    tw.run("Tiny Waffle", 800, 600, scene);
+    const start_options = tw.StartOptions {
+        .title = "Tiny Waffle",
+        .resizeable = true,
+    };
+
+    tw.run(start_options, scene);
 }
 
 var keyboard_input = tw.input.KeyboardInput { };
@@ -21,6 +26,8 @@ pub fn on_enter() !void {
 
 pub fn update() !void {
     tw.profiling.startScope("test");
+    const size = tw.window.GetSize();
+    tw.renderer.drawScreenspaceRect(.from(0,0,@floatFromInt(size.x),@floatFromInt(size.y)), .Red);
     tw.renderer.drawLine(.{ .x = 0, .y = 0 }, .{ .x = 1, .y = 1, }, .Green);
     if (keyboard_input.get()) |input| {
         tw.renderer.drawText(

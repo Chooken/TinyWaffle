@@ -12,6 +12,8 @@ pub const time = @import("time.zig");
 pub const scene_management = @import("scenemanagement.zig");
 pub const profiling = @import("profiling.zig");
 
+pub const StartOptions = internal.application.StartOptions;
+
 pub const Color = struct { 
     r: u8,
     g: u8,
@@ -228,6 +230,6 @@ pub const TextureAtlas = struct {
     }
 };
 
-pub fn run(title: [:0]const u8, width: usize, height: usize, start_scene: scene_management.Scene) void {
-    internal.application.run(title, width, height, start_scene);
+pub fn run(start_options: StartOptions, start_scene: scene_management.Scene) void {
+    internal.application.run(start_options, start_scene);
 }
