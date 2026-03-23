@@ -76,9 +76,20 @@ fn handleResizeEvents(_: ?*anyopaque, event: *sdl3.events.Event) bool {
     switch (event.*) {
 
         .window_pixel_size_changed, .window_resized => {
+
+            // Clear Framebuffer.
+            assert.ok(sdl_renderer.setDrawColor(.{
+                .r = clear_color.r, 
+                .g = clear_color.g, 
+                .b = clear_color.b, 
+                .a = clear_color.a }));
+            assert.ok(sdl_renderer.clear());
+
+            // Call Update Logic
             internal.scene_management.update() catch |err| {
                 std.debug.print("An error occured in a scene function: {s}\n", .{@errorName(err)});
             };
+
             // Preset Framebuffer.
             assert.ok(sdl_renderer.present());
         },
