@@ -22,15 +22,15 @@ pub fn setClipRect(rect: ?TW.Rect(i32)) void {
 
     if (rect) |result| {
 
-        internal.application.sdl_renderer.setClipRect(sdl3.rect.Rect(i32){
+        assert.ok(internal.application.sdl_renderer.setClipRect(sdl3.rect.Rect(i32){
             .x = result.x,
             .y = result.y,
             .w = result.w,
             .h = result.h,
-        });
+        }));
     }
     else {
-        internal.application.sdl_renderer.setClipRect(null);
+         assert.ok(internal.application.sdl_renderer.setClipRect(null));
     }
 }
 
