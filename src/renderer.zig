@@ -18,6 +18,27 @@ pub fn getFov() f32 {
     return Fov;
 }
 
+pub fn setClipRect(rect: ?TW.Rect(i32)) void {
+
+    if (rect) |result| {
+
+        internal.application.sdl_renderer.setClipRect(sdl3.rect.Rect(i32){
+            .x = result.x,
+            .y = result.y,
+            .w = result.w,
+            .h = result.h,
+        });
+    }
+    else {
+        internal.application.sdl_renderer.setClipRect(null);
+    }
+}
+
+pub fn getClipRect() ?TW.Rect(i32) {
+    const sdl_rect: ?sdl3.rect.Rect(i32) = assert.ok(internal.application.sdl_renderer.getClipRect());
+    return if (sdl_rect) |rect| .from(rect.x, rect.y, rect.w, rect.h) else null; 
+}
+
 pub fn drawLine(start: TW.Vec2(f32), end: TW.Vec2(f32), color: TW.Color) void {
 
     assert.ok(internal.application.sdl_renderer.setDrawColor(.{ 
