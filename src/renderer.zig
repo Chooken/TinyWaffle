@@ -168,7 +168,7 @@ pub const RectBatch = struct {
         self.indices.clearRetainingCapacity();
     }
 
-    pub fn deinit(self: *TextureBatch) void {
+    pub fn deinit(self: *RectBatch) void {
         self.batch.deinit(internal.allocator);
         self.vertices.deinit(internal.allocator);
         self.indices.deinit(internal.allocator);
