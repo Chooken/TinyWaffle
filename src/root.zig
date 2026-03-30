@@ -122,8 +122,8 @@ pub fn Rect(comptime T: type) type {
             const other_min = other.min();
             const other_max = other.max();
 
-            if (other_max.x < self_min.x or other_min.x > self_max.x or 
-                other_max.y < self_min.y or other_min.y > self_max.y)
+            if (other_max.x <= self_min.x or other_min.x >= self_max.x or 
+                other_max.y <= self_min.y or other_min.y >= self_max.y)
                 return false;
 
             return true;
@@ -135,8 +135,8 @@ pub fn Rect(comptime T: type) type {
             const other_min = other.min();
             const other_max = other.max();
 
-            if (other_max.x < self_min.x or other_min.x > self_max.x or 
-                other_max.y < self_min.y or other_min.y > self_max.y)
+            if (other_max.x <= self_min.x or other_min.x >= self_max.x or 
+                other_max.y <= self_min.y or other_min.y >= self_max.y)
                 return null;
 
             const overlap_max = Vec2(T) {
