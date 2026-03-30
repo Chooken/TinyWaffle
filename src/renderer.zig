@@ -105,7 +105,7 @@ pub const RectBatch = struct {
                     .a = @as(f32, @floatFromInt(instance.color.a)) / 255, },
                 .tex_coord = .{ 
                     .x = 0, 
-                    .y = 0},
+                    .y = 0 },
             }));
 
             assert.ok(self.vertices.append(internal.allocator, sdl3.render.Vertex{
@@ -117,6 +117,9 @@ pub const RectBatch = struct {
                     .g = @as(f32, @floatFromInt(instance.color.g)) / 255, 
                     .b = @as(f32, @floatFromInt(instance.color.b)) / 255, 
                     .a = @as(f32, @floatFromInt(instance.color.a)) / 255, },
+                .tex_coord = .{ 
+                    .x = 0, 
+                    .y = 0 },
             }));
 
             assert.ok(self.vertices.append(internal.allocator, sdl3.render.Vertex{
@@ -128,6 +131,9 @@ pub const RectBatch = struct {
                     .g = @as(f32, @floatFromInt(instance.color.g)) / 255, 
                     .b = @as(f32, @floatFromInt(instance.color.b)) / 255, 
                     .a = @as(f32, @floatFromInt(instance.color.a)) / 255, },
+                .tex_coord = .{ 
+                    .x = 0, 
+                    .y = 0 },
             }));
 
             assert.ok(self.vertices.append(internal.allocator, sdl3.render.Vertex{
@@ -139,6 +145,9 @@ pub const RectBatch = struct {
                     .g = @as(f32, @floatFromInt(instance.color.g)) / 255, 
                     .b = @as(f32, @floatFromInt(instance.color.b)) / 255, 
                     .a = @as(f32, @floatFromInt(instance.color.a)) / 255, },
+                .tex_coord = .{ 
+                    .x = 0, 
+                    .y = 0 },
             }));
 
             assert.ok(self.indices.append(internal.allocator, @intCast(index * 4)));
@@ -446,7 +455,7 @@ pub fn getUnitSize() f32 {
 
 pub fn worldToScreenspaceRect(from: TW.Rect(f32)) TW.Rect(f32) {
      const renderwidth, const renderheight = internal.application.sdl_renderer.getOutputSize() catch {
-        return .{ .x = 0, .y = 0 };
+        return .{ .x = 0, .y = 0, .w = 0, .h = 0 };
     };
 
     const unitSize = @as(f32, @floatFromInt(renderheight)) / Fov;
