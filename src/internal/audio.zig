@@ -15,6 +15,8 @@ pub const Tone = struct {
     volume: f32 = 1,
 };
 
+var global_volume: f32 = 1.0;
+
 var osculator1: Osculator = .{};
 var audioStream1: sdl3.audio.Stream = undefined;
 
@@ -37,6 +39,14 @@ pub fn setChannelTone(channel: u8, tone: Tone) void {
         3 => osculator4.set(tone),
         else => unreachable
     }
+}
+
+pub fn setGlobalVolume(volume: f32) void {
+    global_volume = volume;
+}
+
+pub fn getGlobalVolume() f32 {
+    return global_volume;
 }
 
 pub fn init() !void {
@@ -107,14 +117,7 @@ const Osculator = struct {
             .Triangle => 2.0 / std.math.pi * std.math.asin(std.math.sin((2.0 * std.math.pi) * self.current_step)),
         };
 
-        return desired * self.volume * self.volume;
-
-        // Attempted Aliasing
-        // const distance = std.math.sign(desired * self.volume * self.volume - self.last) * @min(@abs(desired * self.volume * self.volume - self.last), 1.0 / 10.0);
-
-        // self.last = desired * self.volume * self.volume;
-
-        // return self.last + distance;
+        return desired * self.volume * self.volume * global_volume * global_volume;
     }
 };
 
@@ -140,46 +143,3 @@ fn GetOsculatorData(osculator: ?*Osculator, stream: sdl3.audio.Stream, additiona
         new_additional -= max;
     }
 }
-
-
-
-// fn GetAudioData (tone: ?*Tone, stream: sdl3.audio.Stream, additional: usize, _: usize) void {
-
-//     // Get how many additional floats to provide.
-//     var new_additional = additional / @sizeOf(f32);
-
-//     // Chunk to upload.
-//     var samples: [128]f32 = undefined;
-
-//     // Do till don't need any additional values.
-//     while(new_additional > 0) {
-    
-//         const max = @min(new_additional, samples.len);
-
-//         for (0..max) |index| {
-
-//             const freq = if (tone.?.isPlaying) tone.?.frequency else 0;
-
-//             const phase: f32 = tone.?.sample_index * freq / SAMPLE_RATE;
-
-//             const desired_position = switch (tone.?.wave) {
-//                 .Sin => std.math.sin(phase * 2 * std.math.pi),
-//                 .Square => std.math.sign(std.math.sin(phase * 2 * std.math.pi)) / 8,
-//                 .Triangle => 2.0 / std.math.pi * std.math.asin(std.math.sin(phase * 2 * std.math.pi)),
-//             };
-
-//             const distance = @min(desired_position - tone.?.last_pos, 1.0 / 40.0);
-
-//             samples[index] = tone.?.last_pos + distance;
-
-//             tone.?.last_pos = samples[index];
-            
-//             tone.?.sample_index += 1;
-//         }
-
-//         tone.?.sample_index = @mod(tone.?.sample_index, SAMPLE_RATE);
-
-//         stream.putData(@ptrCast(samples[0..max])) catch break;
-//         new_additional -= max;
-//     }
-// }

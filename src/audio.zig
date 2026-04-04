@@ -21,7 +21,15 @@ pub fn SetWaveform(channel: u8, waveform: Waveform) void {
     ResumeTone(channel);
 }
 
-pub fn SetVolume(channel: u8, volume: f32) void
+pub fn SetGlobalVolume(volume: f32) void {
+    internal.audio.setGlobalVolume(volume);
+}
+
+pub fn GetGlobalVolume() f32 {
+    return internal.audio.getGlobalVolume();
+}
+
+pub fn SetChannelVolume(channel: u8, volume: f32) void
 {
     const clamped = @max(@min(volume, 1), 0);
 

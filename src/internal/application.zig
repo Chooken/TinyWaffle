@@ -22,6 +22,8 @@ pub const StartOptions = struct {
     width: usize = 800,
     height: usize = 600,
     resizeable: bool = false,
+    start_volume: f32 = 0.25,
+    skip_splash: bool = false,
 };
 
 pub fn run(start_options: StartOptions, start_scene: root.scene_management.Scene) void {
@@ -61,12 +63,18 @@ pub fn run(start_options: StartOptions, start_scene: root.scene_management.Scene
     path = assert.ok(std.fs.selfExeDirPathAlloc(internal.allocator));
     defer internal.allocator.free(path);
 
-    splash.first_scene = start_scene;
-    internal.scene_management.setNext(splash.splash_scene);
+    if (start_options.skip_splash) {
+        internal.scene_management.setNext(start_scene);
+    } else {
+        splash.first_scene = start_scene;
+        internal.scene_management.setNext(splash.splash_scene);
+    }
 
     if (start_options.resizeable) {
         _ = assert.ok(sdl3.events.addWatch(anyopaque, handleResizeEvents, null));
     }
+
+    internal.audio.setGlobalVolume(start_options.start_volume);
 
     assert.ok(loop());
 }
