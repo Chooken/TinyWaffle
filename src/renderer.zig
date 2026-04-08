@@ -386,12 +386,14 @@ pub fn drawTexture(texture: TW.Texture, pos: TW.Vec2(f32), color: TW.Color, rota
 
     const unitSize = getUnitSize();
 
+    const ratio = sprite_rect.w / sprite_rect.h;
+
     const screenPos = worldToScreenspace(pos);
 
     const dst_rect = sdl3.rect.Rect(f32) { 
         .x = screenPos.x, 
         .y = screenPos.y, 
-        .w = unitSize, 
+        .w = unitSize * ratio, 
         .h = unitSize};
 
     const internal_texture = internal.assets.getInternalTexture(texture.name, internal.allocator) catch {
