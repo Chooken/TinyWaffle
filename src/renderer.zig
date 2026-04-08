@@ -268,7 +268,7 @@ pub const TextureBatch = struct {
 
     const Instance = struct {
         index: usize,
-        position: TW.Vec2(f32),
+        rect: TW.Rect(f32),
         rotation: usize,
         color: TW.Color,
     };
@@ -282,10 +282,10 @@ pub const TextureBatch = struct {
         };
     }
 
-    pub fn add(self: *TextureBatch, texture_index: usize, position: TW.Vec2(f32), color: TW.Color, rotation: usize) void {
+    pub fn add(self: *TextureBatch, texture_index: usize, rect: TW.Rect(f32), color: TW.Color, rotation: usize) void {
         assert.ok(self.batch.append(internal.allocator, .{
             .index = texture_index,
-            .position = position,
+            .rect = rect,
             .color = color,
             .rotation = rotation, 
         }));
@@ -296,8 +296,6 @@ pub const TextureBatch = struct {
         if (self.batch.items.len == 0) {
             return;
         }
-
-        const unit_size = getUnitSize();
 
         const internal_texture = internal.assets.getInternalTexture(self.atlas.name, internal.allocator) catch {
             return;
@@ -316,7 +314,7 @@ pub const TextureBatch = struct {
             .w = @as(f32, @floatFromInt(texture.bounds.w)), 
             .h = @as(f32, @floatFromInt(texture.bounds.h))};
 
-            const screenPos = worldToScreenspace(instance.position);
+            const screenRect = worldToScreenspaceRect(instance.rect);
 
             const uvs = [_]TW.Vec2(f32){
                 .{ 
@@ -337,16 +335,10 @@ pub const TextureBatch = struct {
                 },
             };
 
-            const dst_rect = sdl3.rect.Rect(f32) { 
-                .x = screenPos.x, 
-                .y = screenPos.y, 
-                .w = unit_size, 
-                .h = unit_size};
-
             assert.ok(self.vertices.append(internal.allocator, sdl3.render.Vertex{
                 .position = .{ 
-                    .x = dst_rect.x, 
-                    .y = dst_rect.y },
+                    .x = screenRect.x, 
+                    .y = screenRect.y },
                 .color = .{ 
                     .r = @as(f32, @floatFromInt(instance.color.r)) / 255, 
                     .g = @as(f32, @floatFromInt(instance.color.g)) / 255, 
@@ -359,8 +351,8 @@ pub const TextureBatch = struct {
 
             assert.ok(self.vertices.append(internal.allocator, sdl3.render.Vertex{
                 .position = .{ 
-                    .x = dst_rect.x, 
-                    .y = dst_rect.y + dst_rect.h },
+                    .x = screenRect.x, 
+                    .y = screenRect.y + screenRect.h },
                 .color = .{ 
                     .r = @as(f32, @floatFromInt(instance.color.r)) / 255, 
                     .g = @as(f32, @floatFromInt(instance.color.g)) / 255, 
@@ -373,8 +365,8 @@ pub const TextureBatch = struct {
 
             assert.ok(self.vertices.append(internal.allocator, sdl3.render.Vertex{
                 .position = .{ 
-                    .x = dst_rect.x + dst_rect.w, 
-                    .y = dst_rect.y + dst_rect.h },
+                    .x = screenRect.x + screenRect.w, 
+                    .y = screenRect.y + screenRect.h },
                 .color = .{ 
                     .r = @as(f32, @floatFromInt(instance.color.r)) / 255, 
                     .g = @as(f32, @floatFromInt(instance.color.g)) / 255, 
@@ -387,8 +379,8 @@ pub const TextureBatch = struct {
 
             assert.ok(self.vertices.append(internal.allocator, sdl3.render.Vertex{
                 .position = .{ 
-                    .x = dst_rect.x + dst_rect.w, 
-                    .y = dst_rect.y },
+                    .x = screenRect.x + screenRect.w, 
+                    .y = screenRect.y },
                 .color = .{ 
                     .r = @as(f32, @floatFromInt(instance.color.r)) / 255, 
                     .g = @as(f32, @floatFromInt(instance.color.g)) / 255, 
@@ -424,7 +416,7 @@ pub const TextureBatch = struct {
     }
 };
 
-pub fn drawTexture(texture: TW.Texture, pos: TW.Vec2(f32), color: TW.Color, rotation: f32) void {
+pub fn drawTexture(texture: TW.Texture, rect: TW.Rect(f32), color: TW.Color, rotation: f32) void {
     
     const sprite_rect = sdl3.rect.Rect(f32) { 
         .x = @as(f32, @floatFromInt(texture.bounds.x)), 
@@ -432,22 +424,12 @@ pub fn drawTexture(texture: TW.Texture, pos: TW.Vec2(f32), color: TW.Color, rota
         .w = @as(f32, @floatFromInt(texture.bounds.w)), 
         .h = @as(f32, @floatFromInt(texture.bounds.h))};
 
-    const unit_size = getUnitSize();
-
-    const ratio = sprite_rect.w / sprite_rect.h;
-
-    const screenPos = worldToScreenspace(pos);
-
-    const dst_rect = sdl3.rect.Rect(f32) { 
-        .x = screenPos.x, 
-        .y = screenPos.y, 
-        .w = unit_size * ratio, 
-        .h = unit_size};
+    const screenRect = worldToScreenspaceRect(rect);
 
     const internal_texture = internal.assets.getInternalTexture(texture.name, internal.allocator) catch {
         // If fail to load texture draw a pink rect in its place.
         drawRect(
-            TW.Rect(f32).from(dst_rect.x, dst_rect.y, dst_rect.w, dst_rect.h), 
+            screenRect, 
             color);
         return;
     };
@@ -457,7 +439,7 @@ pub fn drawTexture(texture: TW.Texture, pos: TW.Vec2(f32), color: TW.Color, rota
     assert.ok(internal.application.sdl_renderer.renderTextureRotated(
         internal_texture.sdl_texture, 
         sprite_rect, 
-        dst_rect, 
+        screenRect, 
         rotation, 
         null, 
         .{ }));

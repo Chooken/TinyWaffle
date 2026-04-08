@@ -85,7 +85,7 @@ pub fn update() !void {
 
     texture_batch.add(
         frame, 
-        TW.Vec2(f32).from(0, 0), 
+        TW.Rect(f32).from(0, 0, 1, 1), 
         TW.Color.from(255, 255, 255, 255), 
         0);
 
