@@ -12,7 +12,7 @@ pub fn setClearColor(color: TW.Color) void {
 
 pub fn setUnitSize(size: f32) void {
 
-    TW.assert.@"true"(size <= 0, "Can't give setUnitSize a size of 0 or less");
+    TW.assert.@"true"(size > 0, "Can't give setUnitSize a size of 0 or less");
 
     _, const renderheight = internal.application.sdl_renderer.getOutputSize() catch {
         return;
