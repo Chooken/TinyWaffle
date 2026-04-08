@@ -4,7 +4,44 @@ const assert = @import("assert.zig");
 const TW = @import("root.zig");
 const internal = @import("internal.zig");
 
-var Fov: f32 = 17;
+var unitSize: UnitType = UnitType { .HeightFov = 17 };
+
+const UnitType = union(enum) {
+    Pixels: f32,
+    HeightFov: f32,
+
+    pub fn getFov(self: UnitType) f32 {
+        switch (self) {
+            .Pixels => |pixels| {
+                _, const renderheight = internal.application.sdl_renderer.getOutputSize() catch {
+                    return 1;
+                };
+
+                return @as(f32, @floatFromInt(renderheight)) / pixels;
+            },
+
+            .HeightFov => |fov| {
+                return fov;
+            }
+        }
+    }
+
+    pub fn getPixels(self: UnitType) f32 {
+        switch (self) {
+            .Pixels => |pixels| {
+                return pixels;
+            },
+
+            .HeightFov => |fov| {
+                _, const renderheight = internal.application.sdl_renderer.getOutputSize() catch {
+                    return 1;
+                };
+
+                return @as(f32, @floatFromInt(renderheight)) / fov;
+            }
+        }
+    }
+};
 
 pub fn setClearColor(color: TW.Color) void {
     internal.application.clear_color = color;
@@ -14,19 +51,19 @@ pub fn setUnitSize(size: f32) void {
 
     TW.assert.@"true"(size > 0, "Can't give setUnitSize a size of 0 or less");
 
-    _, const renderheight = internal.application.sdl_renderer.getOutputSize() catch {
-        return;
-    };
+    unitSize = UnitType { .Pixels = size };
+}
 
-    Fov = @as(f32, @floatFromInt(renderheight)) / size;
+pub fn getUnitSize() f32 {
+    return unitSize.getPixels();
 }
 
 pub fn setFov(fov: f32) void {
-    Fov = fov;
+    unitSize = UnitType { .HeightFov = fov };
 }
 
 pub fn getFov() f32 {
-    return Fov;
+    return unitSize.getFov();
 }
 
 pub fn setClipRect(rect: ?TW.Rect(i32)) void {
@@ -194,7 +231,7 @@ pub fn drawRect(rect: TW.Rect(f32), color: TW.Color) void {
         .b = color.b, 
         .a = color.a }));
 
-    const unitSize = getUnitSize();
+    const unit_size = getUnitSize();
     const screenPos = worldToScreenspace(. {
         .x = rect.x,
         .y = rect.y,
@@ -203,8 +240,8 @@ pub fn drawRect(rect: TW.Rect(f32), color: TW.Color) void {
     assert.ok(internal.application.sdl_renderer.renderFillRect(.{
         .x = screenPos.x,
         .y = screenPos.y,
-        .w = rect.w * unitSize,
-        .h = rect.h * unitSize }));
+        .w = rect.w * unit_size,
+        .h = rect.h * unit_size }));
 }
 
 pub fn drawScreenspaceRect(rect: TW.Rect(f32), color: TW.Color) void {
@@ -260,7 +297,7 @@ pub const TextureBatch = struct {
             return;
         }
 
-        const unitSize = getUnitSize();
+        const unit_size = getUnitSize();
 
         const internal_texture = internal.assets.getInternalTexture(self.atlas.name, internal.allocator) catch {
             return;
@@ -303,8 +340,8 @@ pub const TextureBatch = struct {
             const dst_rect = sdl3.rect.Rect(f32) { 
                 .x = screenPos.x, 
                 .y = screenPos.y, 
-                .w = unitSize, 
-                .h = unitSize};
+                .w = unit_size, 
+                .h = unit_size};
 
             assert.ok(self.vertices.append(internal.allocator, sdl3.render.Vertex{
                 .position = .{ 
@@ -395,7 +432,7 @@ pub fn drawTexture(texture: TW.Texture, pos: TW.Vec2(f32), color: TW.Color, rota
         .w = @as(f32, @floatFromInt(texture.bounds.w)), 
         .h = @as(f32, @floatFromInt(texture.bounds.h))};
 
-    const unitSize = getUnitSize();
+    const unit_size = getUnitSize();
 
     const ratio = sprite_rect.w / sprite_rect.h;
 
@@ -404,8 +441,8 @@ pub fn drawTexture(texture: TW.Texture, pos: TW.Vec2(f32), color: TW.Color, rota
     const dst_rect = sdl3.rect.Rect(f32) { 
         .x = screenPos.x, 
         .y = screenPos.y, 
-        .w = unitSize * ratio, 
-        .h = unitSize};
+        .w = unit_size * ratio, 
+        .h = unit_size};
 
     const internal_texture = internal.assets.getInternalTexture(texture.name, internal.allocator) catch {
         // If fail to load texture draw a pink rect in its place.
@@ -428,14 +465,14 @@ pub fn drawTexture(texture: TW.Texture, pos: TW.Vec2(f32), color: TW.Color, rota
 
 pub fn drawText(bounds: TW.Rect(f32), fontName: []const u8, text: []const u8, color: TW.Color) void {
 
-    const unitSize = getUnitSize();
+    const unit_size = getUnitSize();
 
     const font: *internal.assets.InternalFont = assert.ok(internal.assets.getInternalFont(fontName, internal.allocator));
-    assert.ok(font.sdl_font.setSize(0.6 * unitSize));
+    assert.ok(font.sdl_font.setSize(0.6 * unit_size));
     
     // Need to Cache.
     const sdl_text: sdl3.ttf.Text = assert.ok(sdl3.ttf.Text.init(.{ .value = internal.application.sdl_text_engine.value }, font.sdl_font, text));
-    assert.ok(sdl_text.setWrapWidth(@intFromFloat(bounds.w * unitSize)));
+    assert.ok(sdl_text.setWrapWidth(@intFromFloat(bounds.w * unit_size)));
     assert.ok(sdl_text.setColor(color.r, color.g, color.b, color.a));
     defer sdl_text.deinit();
 
@@ -458,26 +495,18 @@ pub fn drawScreenspaceText(bounds: TW.Rect(f32), fontName: []const u8, text: []c
     assert.ok(sdl3.ttf.drawRendererText(sdl_text, bounds.x, bounds.y));
 }
 
-pub fn getUnitSize() f32 {
-    _, const renderheight = internal.application.sdl_renderer.getOutputSize() catch {
-        return 1;
-    };
-
-    return @as(f32, @floatFromInt(renderheight)) / Fov;
-}
-
 pub fn worldToScreenspaceRect(from: TW.Rect(f32)) TW.Rect(f32) {
      const renderwidth, const renderheight = internal.application.sdl_renderer.getOutputSize() catch {
         return .{ .x = 0, .y = 0, .w = 0, .h = 0 };
     };
 
-    const unitSize = @as(f32, @floatFromInt(renderheight)) / Fov;
+    const unit_size = unitSize.getPixels();
 
     return .{
-        .x = @as(f32, @floatFromInt(renderwidth)) / 2 - unitSize / 2 + from.x * unitSize,
-        .y = @as(f32, @floatFromInt(renderheight)) / 2 - unitSize / 2 + -from.y * unitSize,
-        .w = from.w * unitSize,
-        .h = from.h * unitSize,
+        .x = @as(f32, @floatFromInt(renderwidth)) / 2 - unit_size / 2 + from.x * unit_size,
+        .y = @as(f32, @floatFromInt(renderheight)) / 2 - unit_size / 2 + -from.y * unit_size,
+        .w = from.w * unit_size,
+        .h = from.h * unit_size,
     };
 }
 
@@ -487,11 +516,11 @@ pub fn worldToScreenspace(from: TW.Vec2(f32)) TW.Vec2 (f32)
         return .{ .x = 0, .y = 0 };
     };
 
-    const unitSize = @as(f32, @floatFromInt(renderheight)) / Fov;
+    const unit_size = unitSize.getPixels();
 
     return .{
-        .x = @as(f32, @floatFromInt(renderwidth)) / 2 - unitSize / 2 + from.x * unitSize,
-        .y = @as(f32, @floatFromInt(renderheight)) / 2 - unitSize / 2 + -from.y * unitSize,
+        .x = @as(f32, @floatFromInt(renderwidth)) / 2 - unit_size / 2 + from.x * unit_size,
+        .y = @as(f32, @floatFromInt(renderheight)) / 2 - unit_size / 2 + -from.y * unit_size,
     };
 }
 
@@ -500,12 +529,12 @@ pub fn getScreenRect() TW.Rect(f32) {
         return .{ .x = 0, .y = 0, .w = 0, .h = 0 };
     };
 
-    const unitSize = @as(f32, @floatFromInt(renderheight)) / Fov;
+    const unit_size = unitSize.getPixels();
 
     return .{
         .x = 0,
         .y = 0,
-        .w = @as(f32, @floatFromInt(renderwidth)) / unitSize,
-        .h = @as(f32, @floatFromInt(renderheight)) / unitSize,
+        .w = @as(f32, @floatFromInt(renderwidth)) / unit_size,
+        .h = @as(f32, @floatFromInt(renderheight)) / unit_size,
     };
 }
