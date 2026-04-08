@@ -10,6 +10,17 @@ pub fn setClearColor(color: TW.Color) void {
     internal.application.clear_color = color;
 }
 
+pub fn setUnitSize(size: f32) void {
+
+    TW.assert.@"true"(size <= 0, "Can't give setUnitSize a size of 0 or less");
+
+    _, const renderheight = internal.application.sdl_renderer.getOutputSize() catch {
+        return;
+    };
+
+    Fov = @as(f32, @floatFromInt(renderheight)) / size;
+}
+
 pub fn setFov(fov: f32) void {
     Fov = fov;
 }
