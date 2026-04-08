@@ -426,6 +426,13 @@ pub fn drawTexture(texture: TW.Texture, rect: TW.Rect(f32), color: TW.Color, rot
 
     const screenRect = worldToScreenspaceRect(rect);
 
+    const dst_rect = sdl3.rect.FRect {
+        .x = screenRect.x,
+        .y = screenRect.y,
+        .w = screenRect.w,
+        .h = screenRect.h,
+    };
+
     const internal_texture = internal.assets.getInternalTexture(texture.name, internal.allocator) catch {
         // If fail to load texture draw a pink rect in its place.
         drawRect(
@@ -439,7 +446,7 @@ pub fn drawTexture(texture: TW.Texture, rect: TW.Rect(f32), color: TW.Color, rot
     assert.ok(internal.application.sdl_renderer.renderTextureRotated(
         internal_texture.sdl_texture, 
         sprite_rect, 
-        screenRect, 
+        dst_rect, 
         rotation, 
         null, 
         .{ }));
