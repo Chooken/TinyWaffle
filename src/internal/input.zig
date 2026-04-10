@@ -3,6 +3,8 @@ const sdl3 = @import("sdl3");
 const root = @import("../root.zig");
 const internal = @import("../internal.zig");
 
+var sys_cursors: std.AutoHashMap(sdl3.mouse.SystemCursor, sdl3.mouse.Cursor) = undefined;
+
 pub const Mouse = struct {
     position: root.Vec2(f32),
     delta: root.Vec2(f32), 
@@ -10,6 +12,52 @@ pub const Mouse = struct {
     left_down: bool,
     right_pressed: bool,
     right_down: bool,
+
+    pub const SystemCursor = enum {
+        Default,
+        Pointer,
+        Text,
+        Wait,
+        Progress,
+    };
+
+    pub fn SetCursor(sys_cursor: SystemCursor) void {
+
+        switch (sys_cursor) {
+
+            .Default => {
+                internalSetCursor(sdl3.mouse.SystemCursor.default);
+            },
+
+            .Pointer => {
+                internalSetCursor(sdl3.mouse.SystemCursor.pointer);
+            },
+            
+            .Text => {
+                internalSetCursor(sdl3.mouse.SystemCursor.text);
+            },
+            
+            .Wait => {
+                internalSetCursor(sdl3.mouse.SystemCursor.wait);
+            },
+            
+            .Progress => {
+                internalSetCursor(sdl3.mouse.SystemCursor.progress);
+            },
+        }
+    }
+
+    fn internalSetCursor(cursor: sdl3.mouse.SystemCursor) void {
+
+        const result: std.AutoHashMap(sdl3.mouse.SystemCursor, sdl3.mouse.Cursor).GetOrPutResult = 
+            root.assert.ok(sys_cursors.getOrPut(cursor));
+
+        if (!result.found_existing) {
+            result.value_ptr.* = sdl3.mouse.Cursor.initSystem(cursor);
+        }
+
+        sdl3.mouse.set(result.value_ptr.*);
+    }
 };
 
 pub var mouse = Mouse {
@@ -290,6 +338,7 @@ var keyboard_buffer: std.ArrayList(u8) = .{};
 
 pub fn init() !void {
     key_states = std.AutoHashMap(sdl3.keycode.Keycode, KeyState).init(internal.allocator);
+    sys_cursors = std.AutoHashMap(sdl3.mouse.SystemCursor, sdl3.mouse.Cursor).init(internal.allocator);
 }
 
 pub fn deinit() void {
