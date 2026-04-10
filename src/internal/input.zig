@@ -19,6 +19,9 @@ pub const Mouse = struct {
         Text,
         Wait,
         Progress,
+        ResizeHorizontal,
+        ResizeVertical,
+        Move,
     };
 
     pub fn SetCursor(sys_cursor: SystemCursor) void {
@@ -44,6 +47,18 @@ pub const Mouse = struct {
             .Progress => {
                 internalSetCursor(sdl3.mouse.SystemCursor.progress);
             },
+
+            .ResizeHorizontal => {
+                internalSetCursor(sdl3.mouse.SystemCursor.east_west_resize);
+            },
+
+            .ResizeVertical => {
+                internalSetCursor(sdl3.mouse.SystemCursor.north_south_resize);
+            },
+
+            .Move => {
+                internalSetCursor(sdl3.mouse.SystemCursor.move);
+            },
         }
     }
 
@@ -53,7 +68,7 @@ pub const Mouse = struct {
             root.assert.ok(sys_cursors.getOrPut(cursor));
 
         if (!result.found_existing) {
-            result.value_ptr.* = sdl3.mouse.Cursor.initSystem(cursor);
+            result.value_ptr.* = root.assert.ok(sdl3.mouse.Cursor.initSystem(cursor));
         }
 
         sdl3.mouse.set(result.value_ptr.*);
@@ -344,6 +359,7 @@ pub fn init() !void {
 pub fn deinit() void {
     key_states.deinit();
     keyboard_buffer.deinit(internal.allocator);
+    sys_cursors.deinit();
 }
 
 pub fn getKeyState(key: Keycode) ?KeyState {
