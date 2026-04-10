@@ -71,7 +71,7 @@ pub const Mouse = struct {
             result.value_ptr.* = root.assert.ok(sdl3.mouse.Cursor.initSystem(cursor));
         }
 
-        sdl3.mouse.set(result.value_ptr.*);
+        root.assert.ok(sdl3.mouse.set(result.value_ptr.*));
     }
 };
 
