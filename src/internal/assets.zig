@@ -34,7 +34,7 @@ pub fn getInternalTexture(name: []const u8, allocator: std.mem.Allocator) !*Inte
 
         const surface = try sdl3.image.loadFile(path);
 
-        const texture = try sdl3.render.Texture.init(internal.application.sdl_renderer, surface.getFormat().?, .streaming, surface.getWidth(), surface.getHeight());
+        const texture = try internal.application.sdl_renderer.createTexture(surface.getFormat().?, .streaming, surface.getWidth(), surface.getHeight());
 
         try texture.update(null, @ptrCast(surface.getPixels().?), surface.getPitch());
 
@@ -56,7 +56,7 @@ pub fn addInternalTextureFromData(name: []const u8, data: []const u8) !void {
 
     const surface = try sdl3.image.loadPngIo(reader);
 
-    const texture = try sdl3.render.Texture.init(internal.application.sdl_renderer, surface.getFormat().?, .streaming, surface.getWidth(), surface.getHeight());
+    const texture = try internal.application.sdl_renderer.createTexture(surface.getFormat().?, .streaming, surface.getWidth(), surface.getHeight());
 
     try texture.update(null, @ptrCast(surface.getPixels().?), surface.getPitch());
 
