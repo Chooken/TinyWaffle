@@ -4,7 +4,7 @@ const assert = @import("assert.zig");
 const TW = @import("root.zig");
 const internal = @import("internal.zig");
 
-var unitSize: UnitType = UnitType { .HeightFov = 17 };
+var unitSize: UnitType = UnitType{ .HeightFov = 17 };
 
 const UnitType = union(enum) {
     Pixels: f32,
@@ -22,7 +22,7 @@ const UnitType = union(enum) {
 
             .HeightFov => |fov| {
                 return fov;
-            }
+            },
         }
     }
 
@@ -38,7 +38,7 @@ const UnitType = union(enum) {
                 };
 
                 return @as(f32, @floatFromInt(renderheight)) / fov;
-            }
+            },
         }
     }
 };
@@ -48,10 +48,9 @@ pub fn setClearColor(color: TW.Color) void {
 }
 
 pub fn setUnitSize(size: f32) void {
+    TW.assert.true(size > 0, "Can't give setUnitSize a size of 0 or less");
 
-    TW.assert.@"true"(size > 0, "Can't give setUnitSize a size of 0 or less");
-
-    unitSize = UnitType { .Pixels = size };
+    unitSize = UnitType{ .Pixels = size };
 }
 
 pub fn getUnitSize() f32 {
@@ -59,7 +58,7 @@ pub fn getUnitSize() f32 {
 }
 
 pub fn setFov(fov: f32) void {
-    unitSize = UnitType { .HeightFov = fov };
+    unitSize = UnitType{ .HeightFov = fov };
 }
 
 pub fn getFov() f32 {
@@ -67,46 +66,35 @@ pub fn getFov() f32 {
 }
 
 pub fn setClipRect(rect: ?TW.Rect(i32)) void {
-
     if (rect) |result| {
-
         assert.ok(internal.application.sdl_renderer.setClipRect(sdl3.rect.Rect(i32){
             .x = result.x,
             .y = result.y,
             .w = result.w,
             .h = result.h,
         }));
-    }
-    else {
-         assert.ok(internal.application.sdl_renderer.setClipRect(null));
+    } else {
+        assert.ok(internal.application.sdl_renderer.setClipRect(null));
     }
 }
 
 pub fn getClipRect() ?TW.Rect(i32) {
     const sdl_rect: ?sdl3.rect.Rect(i32) = assert.ok(internal.application.sdl_renderer.getClipRect());
-    return if (sdl_rect) |rect| .from(rect.x, rect.y, rect.w, rect.h) else null; 
+    return if (sdl_rect) |rect| .from(rect.x, rect.y, rect.w, rect.h) else null;
 }
 
 pub fn drawLine(start: TW.Vec2(f32), end: TW.Vec2(f32), color: TW.Color) void {
-
-    assert.ok(internal.application.sdl_renderer.setDrawColor(.{ 
-        .r = color.r, 
-        .g = color.g, 
-        .b = color.b, 
-        .a = color.a }));
+    assert.ok(internal.application.sdl_renderer.setDrawColor(.{ .r = color.r, .g = color.g, .b = color.b, .a = color.a }));
 
     const screenPosStart = worldToScreenspace(start);
     const screenPosEnd = worldToScreenspace(end);
 
-    assert.ok(internal.application.sdl_renderer.renderLine(
-        .{ .x = screenPosStart.x, .y = screenPosStart.y },
-        .{ .x = screenPosEnd.x, .y = screenPosEnd.y }));
+    assert.ok(internal.application.sdl_renderer.renderLine(.{ .x = screenPosStart.x, .y = screenPosStart.y }, .{ .x = screenPosEnd.x, .y = screenPosEnd.y }));
 }
 
 pub const RectBatch = struct {
-
     batch: std.ArrayList(Instance) = .{},
-    vertices: std.ArrayList(sdl3.render.Vertex)= .{},
+    vertices: std.ArrayList(sdl3.render.Vertex) = .{},
     indices: std.ArrayList(c_int) = .{},
 
     const Instance = struct {
@@ -129,73 +117,55 @@ pub const RectBatch = struct {
     }
 
     pub fn render(self: *RectBatch) void {
-
         if (self.batch.items.len == 0) {
             return;
         }
 
         for (self.batch.items, 0..) |instance, index| {
-
-            const dst_rect = sdl3.rect.Rect(f32) { 
-                .x = instance.rect.x, 
-                .y = instance.rect.y, 
-                .w = instance.rect.w, 
-                .h = instance.rect.h};
+            const dst_rect = sdl3.rect.Rect(f32){ .x = instance.rect.x, .y = instance.rect.y, .w = instance.rect.w, .h = instance.rect.h };
 
             assert.ok(self.vertices.append(internal.allocator, sdl3.render.Vertex{
-                .position = .{ 
-                    .x = dst_rect.x, 
-                    .y = dst_rect.y },
-                .color = .{ 
-                    .r = @as(f32, @floatFromInt(instance.color.r)) / 255, 
-                    .g = @as(f32, @floatFromInt(instance.color.g)) / 255, 
-                    .b = @as(f32, @floatFromInt(instance.color.b)) / 255, 
-                    .a = @as(f32, @floatFromInt(instance.color.a)) / 255, },
-                .tex_coord = .{ 
-                    .x = 0, 
-                    .y = 0 },
+                .position = .{ .x = dst_rect.x, .y = dst_rect.y },
+                .color = .{
+                    .r = @as(f32, @floatFromInt(instance.color.r)) / 255,
+                    .g = @as(f32, @floatFromInt(instance.color.g)) / 255,
+                    .b = @as(f32, @floatFromInt(instance.color.b)) / 255,
+                    .a = @as(f32, @floatFromInt(instance.color.a)) / 255,
+                },
+                .tex_coord = .{ .x = 0, .y = 0 },
             }));
 
             assert.ok(self.vertices.append(internal.allocator, sdl3.render.Vertex{
-                .position = .{ 
-                    .x = dst_rect.x, 
-                    .y = dst_rect.y + dst_rect.h },
-                .color = .{ 
-                    .r = @as(f32, @floatFromInt(instance.color.r)) / 255, 
-                    .g = @as(f32, @floatFromInt(instance.color.g)) / 255, 
-                    .b = @as(f32, @floatFromInt(instance.color.b)) / 255, 
-                    .a = @as(f32, @floatFromInt(instance.color.a)) / 255, },
-                .tex_coord = .{ 
-                    .x = 0, 
-                    .y = 0 },
+                .position = .{ .x = dst_rect.x, .y = dst_rect.y + dst_rect.h },
+                .color = .{
+                    .r = @as(f32, @floatFromInt(instance.color.r)) / 255,
+                    .g = @as(f32, @floatFromInt(instance.color.g)) / 255,
+                    .b = @as(f32, @floatFromInt(instance.color.b)) / 255,
+                    .a = @as(f32, @floatFromInt(instance.color.a)) / 255,
+                },
+                .tex_coord = .{ .x = 0, .y = 0 },
             }));
 
             assert.ok(self.vertices.append(internal.allocator, sdl3.render.Vertex{
-                .position = .{ 
-                    .x = dst_rect.x + dst_rect.w, 
-                    .y = dst_rect.y + dst_rect.h },
-                .color = .{ 
-                    .r = @as(f32, @floatFromInt(instance.color.r)) / 255, 
-                    .g = @as(f32, @floatFromInt(instance.color.g)) / 255, 
-                    .b = @as(f32, @floatFromInt(instance.color.b)) / 255, 
-                    .a = @as(f32, @floatFromInt(instance.color.a)) / 255, },
-                .tex_coord = .{ 
-                    .x = 0, 
-                    .y = 0 },
+                .position = .{ .x = dst_rect.x + dst_rect.w, .y = dst_rect.y + dst_rect.h },
+                .color = .{
+                    .r = @as(f32, @floatFromInt(instance.color.r)) / 255,
+                    .g = @as(f32, @floatFromInt(instance.color.g)) / 255,
+                    .b = @as(f32, @floatFromInt(instance.color.b)) / 255,
+                    .a = @as(f32, @floatFromInt(instance.color.a)) / 255,
+                },
+                .tex_coord = .{ .x = 0, .y = 0 },
             }));
 
             assert.ok(self.vertices.append(internal.allocator, sdl3.render.Vertex{
-                .position = .{ 
-                    .x = dst_rect.x + dst_rect.w, 
-                    .y = dst_rect.y },
-                .color = .{ 
-                    .r = @as(f32, @floatFromInt(instance.color.r)) / 255, 
-                    .g = @as(f32, @floatFromInt(instance.color.g)) / 255, 
-                    .b = @as(f32, @floatFromInt(instance.color.b)) / 255, 
-                    .a = @as(f32, @floatFromInt(instance.color.a)) / 255, },
-                .tex_coord = .{ 
-                    .x = 0, 
-                    .y = 0 },
+                .position = .{ .x = dst_rect.x + dst_rect.w, .y = dst_rect.y },
+                .color = .{
+                    .r = @as(f32, @floatFromInt(instance.color.r)) / 255,
+                    .g = @as(f32, @floatFromInt(instance.color.g)) / 255,
+                    .b = @as(f32, @floatFromInt(instance.color.b)) / 255,
+                    .a = @as(f32, @floatFromInt(instance.color.a)) / 255,
+                },
+                .tex_coord = .{ .x = 0, .y = 0 },
             }));
 
             assert.ok(self.indices.append(internal.allocator, @intCast(index * 4)));
@@ -206,10 +176,7 @@ pub const RectBatch = struct {
             assert.ok(self.indices.append(internal.allocator, @intCast(index * 4 + 3)));
         }
 
-        assert.ok(internal.application.sdl_renderer.renderGeometry(
-            null, 
-            self.vertices.items, 
-            self.indices.items));
+        assert.ok(internal.application.sdl_renderer.renderGeometry(null, self.vertices.items, self.indices.items));
 
         self.batch.clearRetainingCapacity();
         self.vertices.clearRetainingCapacity();
@@ -224,43 +191,24 @@ pub const RectBatch = struct {
 };
 
 pub fn drawRect(rect: TW.Rect(f32), color: TW.Color) void {
-
-    assert.ok(internal.application.sdl_renderer.setDrawColor(.{ 
-        .r = color.r, 
-        .g = color.g, 
-        .b = color.b, 
-        .a = color.a }));
+    assert.ok(internal.application.sdl_renderer.setDrawColor(.{ .r = color.r, .g = color.g, .b = color.b, .a = color.a }));
 
     const unit_size = getUnitSize();
-    const screenPos = worldToScreenspace(. {
+    const screenPos = worldToScreenspace(.{
         .x = rect.x,
         .y = rect.y,
     });
 
-    assert.ok(internal.application.sdl_renderer.renderFillRect(.{
-        .x = screenPos.x,
-        .y = screenPos.y,
-        .w = rect.w * unit_size,
-        .h = rect.h * unit_size }));
+    assert.ok(internal.application.sdl_renderer.renderFillRect(.{ .x = screenPos.x, .y = screenPos.y, .w = rect.w * unit_size, .h = rect.h * unit_size }));
 }
 
 pub fn drawScreenspaceRect(rect: TW.Rect(f32), color: TW.Color) void {
+    assert.ok(internal.application.sdl_renderer.setDrawColor(.{ .r = color.r, .g = color.g, .b = color.b, .a = color.a }));
 
-    assert.ok(internal.application.sdl_renderer.setDrawColor(.{ 
-        .r = color.r, 
-        .g = color.g, 
-        .b = color.b, 
-        .a = color.a }));
-
-    assert.ok(internal.application.sdl_renderer.renderFillRect(.{
-        .x = rect.x,
-        .y = rect.y,
-        .w = rect.w,
-        .h = rect.h }));
+    assert.ok(internal.application.sdl_renderer.renderFillRect(.{ .x = rect.x, .y = rect.y, .w = rect.w, .h = rect.h }));
 }
 
 pub const TextureBatch = struct {
-
     atlas: TW.TextureAtlas,
     batch: std.ArrayList(Instance),
     vertices: std.ArrayList(sdl3.render.Vertex),
@@ -276,9 +224,9 @@ pub const TextureBatch = struct {
     pub fn init(atlas: TW.TextureAtlas) TextureBatch {
         return .{
             .atlas = atlas,
-            .batch = .{},
-            .vertices = .{},
-            .indices = .{},
+            .batch = .empty,
+            .vertices = .empty,
+            .indices = .empty,
         };
     }
 
@@ -287,12 +235,11 @@ pub const TextureBatch = struct {
             .index = texture_index,
             .rect = rect,
             .color = color,
-            .rotation = rotation, 
+            .rotation = rotation,
         }));
     }
 
     pub fn render(self: *TextureBatch) void {
-
         if (self.batch.items.len == 0) {
             return;
         }
@@ -305,90 +252,64 @@ pub const TextureBatch = struct {
         const texture_height = internal_texture.sdl_surface.getHeight();
 
         for (self.batch.items, 0..) |instance, index| {
-
             const texture = self.atlas.get(instance.index);
 
-            const sprite_rect = sdl3.rect.Rect(f32) { 
-            .x = @as(f32, @floatFromInt(texture.bounds.x)), 
-            .y = @as(f32, @floatFromInt(texture.bounds.y)), 
-            .w = @as(f32, @floatFromInt(texture.bounds.w)), 
-            .h = @as(f32, @floatFromInt(texture.bounds.h))};
+            const sprite_rect = sdl3.rect.Rect(f32){ .x = @as(f32, @floatFromInt(texture.bounds.x)), .y = @as(f32, @floatFromInt(texture.bounds.y)), .w = @as(f32, @floatFromInt(texture.bounds.w)), .h = @as(f32, @floatFromInt(texture.bounds.h)) };
 
             const screenRect = worldToScreenspaceRect(instance.rect);
 
             const uvs = [_]TW.Vec2(f32){
-                .{ 
+                .{ .x = sprite_rect.x / @as(f32, @floatFromInt(texture_width)), .y = sprite_rect.y / @as(f32, @floatFromInt(texture_width)) },
+                .{
                     .x = sprite_rect.x / @as(f32, @floatFromInt(texture_width)),
-                    .y = sprite_rect.y / @as(f32, @floatFromInt(texture_width))
-                },
-                .{ 
-                    .x = sprite_rect.x / @as(f32, @floatFromInt(texture_width)), 
                     .y = (sprite_rect.y + sprite_rect.h) / @as(f32, @floatFromInt(texture_height)),
                 },
-                .{ 
-                    .x = (sprite_rect.x + sprite_rect.w) / @as(f32, @floatFromInt(texture_width)), 
-                    .y = (sprite_rect.y + sprite_rect.h) / @as(f32, @floatFromInt(texture_height))
-                },
-                .{ 
-                    .x = (sprite_rect.x + sprite_rect.w) / @as(f32, @floatFromInt(texture_width)), 
-                    .y = sprite_rect.y / @as(f32, @floatFromInt(texture_height))
-                },
+                .{ .x = (sprite_rect.x + sprite_rect.w) / @as(f32, @floatFromInt(texture_width)), .y = (sprite_rect.y + sprite_rect.h) / @as(f32, @floatFromInt(texture_height)) },
+                .{ .x = (sprite_rect.x + sprite_rect.w) / @as(f32, @floatFromInt(texture_width)), .y = sprite_rect.y / @as(f32, @floatFromInt(texture_height)) },
             };
 
             assert.ok(self.vertices.append(internal.allocator, sdl3.render.Vertex{
-                .position = .{ 
-                    .x = screenRect.x, 
-                    .y = screenRect.y },
-                .color = .{ 
-                    .r = @as(f32, @floatFromInt(instance.color.r)) / 255, 
-                    .g = @as(f32, @floatFromInt(instance.color.g)) / 255, 
-                    .b = @as(f32, @floatFromInt(instance.color.b)) / 255, 
-                    .a = @as(f32, @floatFromInt(instance.color.a)) / 255, },
-                .tex_coord = .{ 
-                    .x = uvs[(0 + instance.rotation) % 4].x, 
-                    .y = uvs[(0 + instance.rotation) % 4].y},
+                .position = .{ .x = screenRect.x, .y = screenRect.y },
+                .color = .{
+                    .r = @as(f32, @floatFromInt(instance.color.r)) / 255,
+                    .g = @as(f32, @floatFromInt(instance.color.g)) / 255,
+                    .b = @as(f32, @floatFromInt(instance.color.b)) / 255,
+                    .a = @as(f32, @floatFromInt(instance.color.a)) / 255,
+                },
+                .tex_coord = .{ .x = uvs[(0 + instance.rotation) % 4].x, .y = uvs[(0 + instance.rotation) % 4].y },
             }));
 
             assert.ok(self.vertices.append(internal.allocator, sdl3.render.Vertex{
-                .position = .{ 
-                    .x = screenRect.x, 
-                    .y = screenRect.y + screenRect.h },
-                .color = .{ 
-                    .r = @as(f32, @floatFromInt(instance.color.r)) / 255, 
-                    .g = @as(f32, @floatFromInt(instance.color.g)) / 255, 
-                    .b = @as(f32, @floatFromInt(instance.color.b)) / 255, 
-                    .a = @as(f32, @floatFromInt(instance.color.a)) / 255, },
-                .tex_coord = .{ 
-                    .x = uvs[(1 + instance.rotation) % 4].x, 
-                    .y = uvs[(1 + instance.rotation) % 4].y},
+                .position = .{ .x = screenRect.x, .y = screenRect.y + screenRect.h },
+                .color = .{
+                    .r = @as(f32, @floatFromInt(instance.color.r)) / 255,
+                    .g = @as(f32, @floatFromInt(instance.color.g)) / 255,
+                    .b = @as(f32, @floatFromInt(instance.color.b)) / 255,
+                    .a = @as(f32, @floatFromInt(instance.color.a)) / 255,
+                },
+                .tex_coord = .{ .x = uvs[(1 + instance.rotation) % 4].x, .y = uvs[(1 + instance.rotation) % 4].y },
             }));
 
             assert.ok(self.vertices.append(internal.allocator, sdl3.render.Vertex{
-                .position = .{ 
-                    .x = screenRect.x + screenRect.w, 
-                    .y = screenRect.y + screenRect.h },
-                .color = .{ 
-                    .r = @as(f32, @floatFromInt(instance.color.r)) / 255, 
-                    .g = @as(f32, @floatFromInt(instance.color.g)) / 255, 
-                    .b = @as(f32, @floatFromInt(instance.color.b)) / 255, 
-                    .a = @as(f32, @floatFromInt(instance.color.a)) / 255, },
-                .tex_coord = .{ 
-                    .x = uvs[(2 + instance.rotation) % 4].x, 
-                    .y = uvs[(2 + instance.rotation) % 4].y},
+                .position = .{ .x = screenRect.x + screenRect.w, .y = screenRect.y + screenRect.h },
+                .color = .{
+                    .r = @as(f32, @floatFromInt(instance.color.r)) / 255,
+                    .g = @as(f32, @floatFromInt(instance.color.g)) / 255,
+                    .b = @as(f32, @floatFromInt(instance.color.b)) / 255,
+                    .a = @as(f32, @floatFromInt(instance.color.a)) / 255,
+                },
+                .tex_coord = .{ .x = uvs[(2 + instance.rotation) % 4].x, .y = uvs[(2 + instance.rotation) % 4].y },
             }));
 
             assert.ok(self.vertices.append(internal.allocator, sdl3.render.Vertex{
-                .position = .{ 
-                    .x = screenRect.x + screenRect.w, 
-                    .y = screenRect.y },
-                .color = .{ 
-                    .r = @as(f32, @floatFromInt(instance.color.r)) / 255, 
-                    .g = @as(f32, @floatFromInt(instance.color.g)) / 255, 
-                    .b = @as(f32, @floatFromInt(instance.color.b)) / 255, 
-                    .a = @as(f32, @floatFromInt(instance.color.a)) / 255, },
-                .tex_coord = .{ 
-                    .x = uvs[(3 + instance.rotation) % 4].x, 
-                    .y = uvs[(3 + instance.rotation) % 4].y},
+                .position = .{ .x = screenRect.x + screenRect.w, .y = screenRect.y },
+                .color = .{
+                    .r = @as(f32, @floatFromInt(instance.color.r)) / 255,
+                    .g = @as(f32, @floatFromInt(instance.color.g)) / 255,
+                    .b = @as(f32, @floatFromInt(instance.color.b)) / 255,
+                    .a = @as(f32, @floatFromInt(instance.color.a)) / 255,
+                },
+                .tex_coord = .{ .x = uvs[(3 + instance.rotation) % 4].x, .y = uvs[(3 + instance.rotation) % 4].y },
             }));
 
             assert.ok(self.indices.append(internal.allocator, @intCast(index * 4)));
@@ -399,10 +320,7 @@ pub const TextureBatch = struct {
             assert.ok(self.indices.append(internal.allocator, @intCast(index * 4 + 3)));
         }
 
-        assert.ok(internal.application.sdl_renderer.renderGeometry(
-            internal_texture.sdl_texture, 
-            self.vertices.items, 
-            self.indices.items));
+        assert.ok(internal.application.sdl_renderer.renderGeometry(internal_texture.sdl_texture, self.vertices.items, self.indices.items));
 
         self.batch.clearRetainingCapacity();
         self.vertices.clearRetainingCapacity();
@@ -417,16 +335,11 @@ pub const TextureBatch = struct {
 };
 
 pub fn drawTexture(texture: TW.Texture, rect: TW.Rect(f32), color: TW.Color, rotation: f32) void {
-    
-    const sprite_rect = sdl3.rect.Rect(f32) { 
-        .x = @as(f32, @floatFromInt(texture.bounds.x)), 
-        .y = @as(f32, @floatFromInt(texture.bounds.y)), 
-        .w = @as(f32, @floatFromInt(texture.bounds.w)), 
-        .h = @as(f32, @floatFromInt(texture.bounds.h))};
+    const sprite_rect = sdl3.rect.Rect(f32){ .x = @as(f32, @floatFromInt(texture.bounds.x)), .y = @as(f32, @floatFromInt(texture.bounds.y)), .w = @as(f32, @floatFromInt(texture.bounds.w)), .h = @as(f32, @floatFromInt(texture.bounds.h)) };
 
     const screenRect = worldToScreenspaceRect(rect);
 
-    const dst_rect = sdl3.rect.FRect {
+    const dst_rect = sdl3.rect.FRect{
         .x = screenRect.x,
         .y = screenRect.y,
         .w = screenRect.w,
@@ -435,30 +348,21 @@ pub fn drawTexture(texture: TW.Texture, rect: TW.Rect(f32), color: TW.Color, rot
 
     const internal_texture = internal.assets.getInternalTexture(texture.name, internal.allocator) catch {
         // If fail to load texture draw a pink rect in its place.
-        drawRect(
-            screenRect, 
-            color);
+        drawRect(screenRect, color);
         return;
     };
-    
+
     assert.ok(internal_texture.sdl_texture.setColorMod(color.r, color.g, color.b));
 
-    assert.ok(internal.application.sdl_renderer.renderTextureRotated(
-        internal_texture.sdl_texture, 
-        sprite_rect, 
-        dst_rect, 
-        rotation, 
-        null, 
-        .{ }));
+    assert.ok(internal.application.sdl_renderer.renderTextureRotated(internal_texture.sdl_texture, sprite_rect, dst_rect, rotation, null, .{}));
 }
 
 pub fn drawText(bounds: TW.Rect(f32), fontName: []const u8, text: []const u8, color: TW.Color) void {
-
     const unit_size = getUnitSize();
 
     const font: *internal.assets.InternalFont = assert.ok(internal.assets.getInternalFont(fontName, internal.allocator));
     assert.ok(font.sdl_font.setSize(0.6 * unit_size));
-    
+
     // Need to Cache.
     const sdl_text: sdl3.ttf.Text = assert.ok(sdl3.ttf.Text.init(.{ .value = internal.application.sdl_text_engine.value }, font.sdl_font, text));
     assert.ok(sdl_text.setWrapWidth(@intFromFloat(bounds.w * unit_size)));
@@ -471,7 +375,6 @@ pub fn drawText(bounds: TW.Rect(f32), fontName: []const u8, text: []const u8, co
 }
 
 pub fn drawScreenspaceText(bounds: TW.Rect(f32), fontName: []const u8, text: []const u8, color: TW.Color, size: f32) void {
-
     const font: *internal.assets.InternalFont = assert.ok(internal.assets.getInternalFont(fontName, internal.allocator));
     assert.ok(font.sdl_font.setSize(size));
 
@@ -485,7 +388,7 @@ pub fn drawScreenspaceText(bounds: TW.Rect(f32), fontName: []const u8, text: []c
 }
 
 pub fn worldToScreenspaceRect(from: TW.Rect(f32)) TW.Rect(f32) {
-     const renderwidth, const renderheight = internal.application.sdl_renderer.getOutputSize() catch {
+    const renderwidth, const renderheight = internal.application.sdl_renderer.getOutputSize() catch {
         return .{ .x = 0, .y = 0, .w = 0, .h = 0 };
     };
 
@@ -499,8 +402,7 @@ pub fn worldToScreenspaceRect(from: TW.Rect(f32)) TW.Rect(f32) {
     };
 }
 
-pub fn worldToScreenspace(from: TW.Vec2(f32)) TW.Vec2 (f32)
-{
+pub fn worldToScreenspace(from: TW.Vec2(f32)) TW.Vec2(f32) {
     const renderwidth, const renderheight = internal.application.sdl_renderer.getOutputSize() catch {
         return .{ .x = 0, .y = 0 };
     };

@@ -26,10 +26,8 @@ pub fn deinit() void {
 }
 
 pub fn getInternalTexture(name: []const u8, allocator: std.mem.Allocator) !*InternalTexture {
-
-    if (!textures.contains(name))
-    {   
-        const path: [:0]u8 = std.fmt.allocPrintSentinel(allocator, "{s}/assets/{s}", .{ internal.application.path, name}, 0) catch unreachable;
+    if (!textures.contains(name)) {
+        const path: [:0]u8 = std.fmt.allocPrintSentinel(allocator, "{s}/assets/{s}", .{ internal.application.path, name }, 0) catch unreachable;
         defer allocator.free(path);
 
         const surface = try sdl3.image.loadFile(path);
@@ -38,7 +36,7 @@ pub fn getInternalTexture(name: []const u8, allocator: std.mem.Allocator) !*Inte
 
         try texture.update(null, @ptrCast(surface.getPixels().?), surface.getPitch());
 
-        const internal_texture = InternalTexture {
+        const internal_texture = InternalTexture{
             .sdl_surface = surface,
             .sdl_texture = texture,
         };
@@ -51,7 +49,6 @@ pub fn getInternalTexture(name: []const u8, allocator: std.mem.Allocator) !*Inte
 }
 
 pub fn addInternalTextureFromData(name: []const u8, data: []const u8) !void {
-
     const reader = try sdl3.io_stream.Stream.initFromConstMem(data);
 
     const surface = try sdl3.image.loadPngIo(reader);
@@ -60,7 +57,7 @@ pub fn addInternalTextureFromData(name: []const u8, data: []const u8) !void {
 
     try texture.update(null, @ptrCast(surface.getPixels().?), surface.getPitch());
 
-    const internal_texture = InternalTexture {
+    const internal_texture = InternalTexture{
         .sdl_surface = surface,
         .sdl_texture = texture,
     };
@@ -70,12 +67,11 @@ pub fn addInternalTextureFromData(name: []const u8, data: []const u8) !void {
 }
 
 pub fn getInternalFont(name: []const u8, allocator: std.mem.Allocator) !*InternalFont {
-     if (!fonts.contains(name))
-    {   
-        const path: [:0]u8 = std.fmt.allocPrintSentinel(allocator, "{s}/assets/{s}", .{ internal.application.path, name}, 0) catch unreachable;
+    if (!fonts.contains(name)) {
+        const path: [:0]u8 = std.fmt.allocPrintSentinel(allocator, "{s}/assets/{s}", .{ internal.application.path, name }, 0) catch unreachable;
         defer allocator.free(path);
 
-        const internal_font = InternalFont {
+        const internal_font = InternalFont{
             .sdl_font = try sdl3.ttf.Font.init(path, 16),
         };
 
@@ -86,18 +82,16 @@ pub fn getInternalFont(name: []const u8, allocator: std.mem.Allocator) !*Interna
 }
 
 pub fn addInternalFontFromData(name: []const u8, data: []const u8) !void {
-
     const reader = try sdl3.io_stream.Stream.initFromConstMem(data);
 
-    const internal_font = InternalFont {
+    const internal_font = InternalFont{
         .sdl_font = try sdl3.ttf.Font.initFromIO(reader, true, 16),
     };
 
     assert.ok(fonts.put(name, internal_font));
 }
 
-pub fn removeInternalTexture(name: []const u8) void
-{
+pub fn removeInternalTexture(name: []const u8) void {
     if (textures.get(name)) |texture| {
         texture.sdl_texture.deinit();
         textures.remove(name);

@@ -27,11 +27,14 @@ pub const StartOptions = struct {
 };
 
 pub fn run(start_options: StartOptions, start_scene: root.scene_management.Scene) void {
-    assert.ok(internal.initAllocator());
+    internal.initAllocator();
     defer internal.deinitAllocator();
 
-    const initFlags = sdl3.InitFlags { 
-        .video = true, 
+    internal.initIo();
+    defer internal.deinitIo();
+
+    const initFlags = sdl3.InitFlags{
+        .video = true,
         .events = true,
         .audio = true,
     };
@@ -40,11 +43,7 @@ pub fn run(start_options: StartOptions, start_scene: root.scene_management.Scene
     assert.ok(sdl3.ttf.init());
     defer sdl3.shutdown();
 
-    sdl_window, sdl_renderer = assert.ok(sdl3.render.Renderer.initWithWindow(
-        start_options.title, 
-        start_options.width, 
-        start_options.height, 
-        .{ .high_pixel_density = true, .resizable = start_options.resizeable }));
+    sdl_window, sdl_renderer = assert.ok(sdl3.render.Renderer.initWithWindow(start_options.title, start_options.width, start_options.height, .{ .high_pixel_density = true, .resizable = start_options.resizeable }));
     defer {
         sdl_renderer.deinit();
         sdl_window.deinit();
@@ -60,7 +59,7 @@ pub fn run(start_options: StartOptions, start_scene: root.scene_management.Scene
     sdl_text_engine = assert.ok(sdl3.ttf.RendererTextEngine.init(sdl_renderer));
     defer sdl_text_engine.deinit();
 
-    path = assert.ok(std.fs.selfExeDirPathAlloc(internal.allocator));
+    path = assert.ok(std.process.executableDirPathAlloc(internal.io, internal.allocator));
     defer internal.allocator.free(path);
 
     if (start_options.skip_splash) {
@@ -80,21 +79,19 @@ pub fn run(start_options: StartOptions, start_scene: root.scene_management.Scene
 }
 
 fn handleResizeEvents(_: ?*anyopaque, event: *sdl3.events.Event) bool {
-
     switch (event.*) {
-
         .window_pixel_size_changed, .window_resized => {
 
             // Clear Framebuffer.
-            assert.ok(sdl_renderer.setDrawColor(.{
-                .r = clear_color.r, 
-                .g = clear_color.g, 
-                .b = clear_color.b, 
-                .a = clear_color.a }));
+            assert.ok(sdl_renderer.setDrawColor(.{ .r = clear_color.r, .g = clear_color.g, .b = clear_color.b, .a = clear_color.a }));
             assert.ok(sdl_renderer.clear());
 
             // Call Update Logic
             internal.scene_management.update() catch |err| {
+                if (@errorReturnTrace()) |trace| {
+                    std.debug.dumpErrorReturnTrace(trace);
+                }
+
                 std.debug.print("An error occured in a scene function: {s}\n", .{@errorName(err)});
             };
 
@@ -106,15 +103,13 @@ fn handleResizeEvents(_: ?*anyopaque, event: *sdl3.events.Event) bool {
     }
 
     return true;
-} 
+}
 
 fn loop() !void {
-
-    var timer = try std.time.Timer.start();
+    var frame_start: std.Io.Timestamp = undefined;
 
     while (application_running) {
-
-        internal.profiling.reset();
+        frame_start = std.Io.Clock.real.now(internal.io);
 
         internal.profiling.startScope("Total");
 
@@ -164,14 +159,8 @@ fn loop() !void {
         internal.profiling.startScope("App Update");
 
         // Clear Framebuffer.
-        assert.ok(sdl_renderer.setDrawColor(.{
-            .r = clear_color.r, 
-            .g = clear_color.g, 
-            .b = clear_color.b, 
-            .a = clear_color.a }));
+        assert.ok(sdl_renderer.setDrawColor(.{ .r = clear_color.r, .g = clear_color.g, .b = clear_color.b, .a = clear_color.a }));
         assert.ok(sdl_renderer.clear());
-
-        last_frame_time = @as(f32, @floatFromInt(timer.lap())) / std.time.ns_per_s ;
 
         internal.profiling.startScope("Scene Update");
 
@@ -190,6 +179,8 @@ fn loop() !void {
 
         // Preset Framebuffer.
         assert.ok(sdl_renderer.present());
+
+        last_frame_time = @as(f32, @floatFromInt(frame_start.untilNow(internal.io, .real).toMicroseconds())) / std.time.us_per_s;
 
         //profiling.printTimings();
     }

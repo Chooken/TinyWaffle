@@ -37,7 +37,7 @@ pub fn setChannelTone(channel: u8, tone: Tone) void {
         1 => osculator2.set(tone),
         2 => osculator3.set(tone),
         3 => osculator4.set(tone),
-        else => unreachable
+        else => unreachable,
     }
 }
 
@@ -52,11 +52,10 @@ pub fn getGlobalVolume() f32 {
 pub fn init() !void {
 
     // Make a spec for audio stream.
-    const spec = sdl3.audio.Spec {
+    const spec = sdl3.audio.Spec{
         .sample_rate = SAMPLE_RATE,
         .num_channels = 1,
-        .format = if (sdl3.endian.byteOrder() == .little) sdl3.audio.Format.floating_32_bit_little_endian 
-            else sdl3.audio.Format.floating_32_bit_big_endian,
+        .format = if (sdl3.endian.byteOrder() == .little) sdl3.audio.Format.floating_32_bit_little_endian else sdl3.audio.Format.floating_32_bit_big_endian,
     };
 
     // Creates a stream with 440hz frequency.
@@ -100,20 +99,19 @@ const Osculator = struct {
     }
 
     pub fn next(self: *Osculator) f32 {
-
         self.current_step += self.step_size;
 
-        if (self.current_step > 1 or self.step_size == 0) { 
+        if (self.current_step > 1 or self.step_size == 0) {
             self.update();
         }
 
-        if (self.current_step > 1) { 
-            self.current_step -= 1; 
+        if (self.current_step > 1) {
+            self.current_step -= 1;
         }
 
         const desired = switch (self.waveform) {
             .Sin => std.math.sin((2.0 * std.math.pi) * self.current_step),
-            .Square => std.math.sign(std.math.sin((2.0 * std.math.pi) * self.current_step)) / 6,
+            .Square => @as(f32, std.math.sign(std.math.sin((2.0 * std.math.pi) * self.current_step))) / 6.0,
             .Triangle => 2.0 / std.math.pi * std.math.asin(std.math.sin((2.0 * std.math.pi) * self.current_step)),
         };
 
@@ -122,7 +120,7 @@ const Osculator = struct {
 };
 
 fn GetOsculatorData(osculator: ?*Osculator, stream: sdl3.audio.Stream, additional: usize, _: usize) void {
-    
+
     // Get how many additional floats to provide.
     var new_additional = additional / @sizeOf(f32);
 
@@ -130,12 +128,10 @@ fn GetOsculatorData(osculator: ?*Osculator, stream: sdl3.audio.Stream, additiona
     var samples: [128]f32 = undefined;
 
     // Do till don't need any additional values.
-    while(new_additional > 0) {
-    
+    while (new_additional > 0) {
         const max = @min(new_additional, samples.len);
 
         for (0..max) |index| {
-
             samples[index] = osculator.?.next();
         }
 

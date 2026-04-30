@@ -2,21 +2,20 @@ const std = @import("std");
 const root = @import("../root.zig");
 const internal = @import("../internal.zig");
 
-var scopeTimers: ?std.StringHashMap(std.time.Timer) = null;
+var scopeTimers: ?std.StringHashMap(std.Io.Timestamp) = null;
 var scopeDepth: u64 = 0;
 
-const ScopeTime = struct { 
+const ScopeTime = struct {
     name: []const u8,
-    time: u64,
+    time: i64,
     depth: u64,
 };
 
-var scopeTimes: std.ArrayList(ScopeTime) = .{};
+var scopeTimes: std.ArrayList(ScopeTime) = .empty;
 
 pub fn init() !void {
-
     if (scopeTimers == null)
-        scopeTimers = std.StringHashMap(std.time.Timer).init(internal.allocator);
+        scopeTimers = std.StringHashMap(std.Io.Timestamp).init(internal.allocator);
 }
 
 pub fn deinit() void {
@@ -31,18 +30,17 @@ pub fn reset() void {
 }
 
 pub fn startScope(name: []const u8) void {
-
-    root.assert.ok(scopeTimers.?.put(name, root.assert.ok(std.time.Timer.start())));
+    root.assert.ok(scopeTimers.?.put(name, std.Io.Clock.real.now(internal.io)));
     scopeDepth += 1;
 }
 
 pub fn endScope(name: []const u8) void {
     scopeDepth -= 1;
 
-    if(scopeTimers.?.getPtr(name)) |timer| {
+    if (scopeTimers.?.getPtr(name)) |timestamp| {
         root.assert.ok(scopeTimes.append(internal.allocator, .{
             .name = name,
-            .time = timer.lap(),
+            .time = timestamp.untilNow(internal.io, .real).toMicroseconds(),
             .depth = scopeDepth,
         }));
     }

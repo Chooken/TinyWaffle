@@ -9,10 +9,9 @@ pub const WindowSettings = struct {
 };
 
 pub fn GetSettings() WindowSettings {
-
     const windowFlags = internal.application.sdl_window.getFlags();
 
-    return WindowSettings {
+    return WindowSettings{
         .fullscreen = windowFlags.fullscreen,
     };
 }

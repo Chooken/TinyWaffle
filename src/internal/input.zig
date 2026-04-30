@@ -7,7 +7,7 @@ var sys_cursors: std.AutoHashMap(sdl3.mouse.SystemCursor, sdl3.mouse.Cursor) = u
 
 pub const Mouse = struct {
     position: root.Vec2(f32),
-    delta: root.Vec2(f32), 
+    delta: root.Vec2(f32),
     left_pressed: bool,
     left_down: bool,
     right_pressed: bool,
@@ -25,9 +25,7 @@ pub const Mouse = struct {
     };
 
     pub fn SetCursor(sys_cursor: SystemCursor) void {
-
         switch (sys_cursor) {
-
             .Default => {
                 internalSetCursor(sdl3.mouse.SystemCursor.default);
             },
@@ -35,15 +33,15 @@ pub const Mouse = struct {
             .Pointer => {
                 internalSetCursor(sdl3.mouse.SystemCursor.pointer);
             },
-            
+
             .Text => {
                 internalSetCursor(sdl3.mouse.SystemCursor.text);
             },
-            
+
             .Wait => {
                 internalSetCursor(sdl3.mouse.SystemCursor.wait);
             },
-            
+
             .Progress => {
                 internalSetCursor(sdl3.mouse.SystemCursor.progress);
             },
@@ -63,8 +61,7 @@ pub const Mouse = struct {
     }
 
     fn internalSetCursor(cursor: sdl3.mouse.SystemCursor) void {
-
-        const result: std.AutoHashMap(sdl3.mouse.SystemCursor, sdl3.mouse.Cursor).GetOrPutResult = 
+        const result: std.AutoHashMap(sdl3.mouse.SystemCursor, sdl3.mouse.Cursor).GetOrPutResult =
             root.assert.ok(sys_cursors.getOrPut(cursor));
 
         if (!result.found_existing) {
@@ -75,7 +72,7 @@ pub const Mouse = struct {
     }
 };
 
-pub var mouse = Mouse {
+pub var mouse = Mouse{
     .position = .{ .x = 0, .y = 0 },
     .delta = .{ .x = 0, .y = 0 },
     .left_pressed = false,
@@ -349,7 +346,7 @@ pub const KeyState = struct {
 };
 
 var key_states: std.AutoHashMap(sdl3.keycode.Keycode, KeyState) = undefined;
-var keyboard_buffer: std.ArrayList(u8) = .{};
+var keyboard_buffer: std.ArrayList(u8) = .empty;
 
 pub fn init() !void {
     key_states = std.AutoHashMap(sdl3.keycode.Keycode, KeyState).init(internal.allocator);
@@ -363,7 +360,6 @@ pub fn deinit() void {
 }
 
 pub fn getKeyState(key: Keycode) ?KeyState {
-
     if (sdl3.keycode.Keycode.fromSdl(@intFromEnum(key))) |keycode| {
         return key_states.get(keycode);
     }
@@ -393,13 +389,13 @@ pub fn onMouseMotion(event: sdl3.events.MouseMotion) void {
 
 pub fn onMouseEvent(event: sdl3.events.MouseButton) void {
     switch (event.button) {
-        .left => { 
+        .left => {
             mouse.left_down = event.down;
-            mouse.left_pressed = event.down; 
+            mouse.left_pressed = event.down;
         },
         .right => {
             mouse.right_down = event.down;
-            mouse.right_pressed = event.down; 
+            mouse.right_pressed = event.down;
         },
         else => {},
     }
@@ -407,7 +403,6 @@ pub fn onMouseEvent(event: sdl3.events.MouseButton) void {
 
 pub fn onKeyDownEvent(event: sdl3.events.Keyboard) void {
     if (event.key) |key| {
-
         var state = key_states.getOrPut(key) catch unreachable;
         state.value_ptr.down = true;
 
@@ -437,8 +432,7 @@ pub fn resetKeyboardInput() void {
 }
 
 pub fn getKeyboardInput() ?[]const u8 {
-    if (keyboard_buffer.items.len == 0)
-    {
+    if (keyboard_buffer.items.len == 0) {
         return null;
     }
     return keyboard_buffer.items;

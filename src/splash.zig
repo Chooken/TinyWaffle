@@ -2,8 +2,9 @@ const splashAnimation: []const u8 = @embedFile("./included_files/Engine Intro.pn
 const TW = @import("root.zig");
 const internal = @import("internal.zig");
 const profiling = @import("profiling.zig");
+const std = @import("std");
 
-pub const splash_scene = TW.scene_management.Scene {
+pub const splash_scene = TW.scene_management.Scene{
     .on_enter = init,
     .on_update = update,
     .on_exit = exit,
@@ -24,20 +25,18 @@ pub fn init() !void {
 var tick: f32 = 0;
 
 pub fn update() !void {
-
     tick += TW.time.getDeltaTime() * 10;
 
     if (tick > 20) {
-        if (first_scene) |scene|{
+        if (first_scene) |scene| {
             internal.scene_management.setNext(scene);
-        } 
+        }
         return;
     }
 
     const frame: usize = @min(@as(usize, @intFromFloat(tick)), 17);
 
     switch (frame) {
-
         3 => {
             TW.audio.SetFrequency(0, 200);
             TW.audio.SetWaveform(0, .Triangle);
@@ -76,18 +75,14 @@ pub fn update() !void {
             TW.audio.SetFrequency(0, 120);
             TW.audio.SetWaveform(0, .Triangle);
         },
-        
-        else => { 
+
+        else => {
             TW.audio.StopTone(0);
             TW.audio.StopTone(1);
         },
     }
 
-    texture_batch.add(
-        frame, 
-        TW.Rect(f32).from(0, 0, 1, 1), 
-        TW.Color.from(255, 255, 255, 255), 
-        0);
+    texture_batch.add(frame, TW.Rect(f32).from(0, 0, 1, 1), TW.Color.from(255, 255, 255, 255), 0);
 
     texture_batch.render();
 }
