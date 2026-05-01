@@ -41,7 +41,8 @@ pub fn getInternalTexture(name: []const u8, allocator: std.mem.Allocator) !*Inte
             .sdl_texture = texture,
         };
 
-        assert.ok(internal_texture.sdl_texture.setScaleMode(.nearest));
+        try internal_texture.sdl_texture.setScaleMode(.nearest);
+        
         assert.ok(textures.put(name, internal_texture));
     }
 
@@ -62,7 +63,8 @@ pub fn addInternalTextureFromData(name: []const u8, data: []const u8) !void {
         .sdl_texture = texture,
     };
 
-    assert.ok(internal_texture.sdl_texture.setScaleMode(.nearest));
+    try internal_texture.sdl_texture.setScaleMode(.nearest);
+
     assert.ok(textures.put(name, internal_texture));
 }
 

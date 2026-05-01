@@ -93,9 +93,9 @@ pub fn drawLine(start: TW.Vec2(f32), end: TW.Vec2(f32), color: TW.Color) void {
 }
 
 pub const RectBatch = struct {
-    batch: std.ArrayList(Instance) = .{},
-    vertices: std.ArrayList(sdl3.render.Vertex) = .{},
-    indices: std.ArrayList(c_int) = .{},
+    batch: std.ArrayList(Instance) = .empty,
+    vertices: std.ArrayList(sdl3.render.Vertex) = .empty,
+    indices: std.ArrayList(c_int) = .empty,
 
     const Instance = struct {
         rect: TW.Rect(f32),

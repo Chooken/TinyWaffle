@@ -79,6 +79,11 @@ pub fn run(start_options: StartOptions, start_scene: root.scene_management.Scene
 }
 
 fn handleResizeEvents(_: ?*anyopaque, event: *sdl3.events.Event) bool {
+
+    if (!application_running) {
+        return true;
+    }
+
     switch (event.*) {
         .window_pixel_size_changed, .window_resized => {
 
@@ -93,6 +98,7 @@ fn handleResizeEvents(_: ?*anyopaque, event: *sdl3.events.Event) bool {
                 }
 
                 std.debug.print("An error occured in a scene function: {s}\n", .{@errorName(err)});
+                application_running = false;
             };
 
             // Preset Framebuffer.
@@ -166,7 +172,13 @@ fn loop() !void {
 
         // Call Update Logic
         internal.scene_management.update() catch |err| {
+            
+            if (@errorReturnTrace()) |trace| {
+                std.debug.dumpErrorReturnTrace(trace);
+            }
+
             std.debug.print("An error occured in a scene function: {s}\n", .{@errorName(err)});
+            application_running = false;
         };
 
         internal.profiling.endScope("Scene Update");
@@ -186,6 +198,10 @@ fn loop() !void {
     }
 
     internal.scene_management.exit();
+}
+
+fn app_update() void {
+
 }
 
 pub fn quit() void {

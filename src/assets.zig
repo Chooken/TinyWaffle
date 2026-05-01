@@ -6,7 +6,7 @@ const internal = @import("internal.zig");
 pub fn getTexture(name: []const u8) !root.Texture {
 
     const texture = try internal.assets.getInternalTexture(name, internal.allocator);
-    const width, const height = assert.ok(texture.sdl_texture.getSize());
+    const width, const height = try texture.sdl_texture.getSize();
 
     return root.Texture {
         .name = name,
@@ -17,7 +17,7 @@ pub fn getTexture(name: []const u8) !root.Texture {
 pub fn getTextureAtlas(name: []const u8, dimensions: root.Vec2(usize)) !root.TextureAtlas {
 
     const texture = try internal.assets.getInternalTexture(name, internal.allocator);
-    const width, const height = assert.ok(texture.sdl_texture.getSize());
+    const width, const height = try texture.sdl_texture.getSize();
 
     return root.TextureAtlas {
         .name = name,

@@ -30,6 +30,7 @@ var osculator4: Osculator = .{};
 var audioStream4: sdl3.audio.Stream = undefined;
 
 pub fn setChannelTone(channel: u8, tone: Tone) void {
+    
     assert.true(channel < 4, "Using a channel that doesn't exist.");
 
     switch (channel) {
