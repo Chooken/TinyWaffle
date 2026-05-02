@@ -33,6 +33,15 @@ pub fn isKeyPressed(key: Keycode) bool {
     return false;
 }
 
+pub fn isKeyRepeated(key: Keycode) bool {
+    if(internal.input.getKeyState(key)) |state|
+    {
+        return state.repeat;
+    } 
+
+    return false;
+}
+
 var input_captured: bool = false;
 
 pub const KeyboardInput = struct {

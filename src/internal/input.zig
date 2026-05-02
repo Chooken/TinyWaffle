@@ -343,6 +343,7 @@ pub const Keycode = enum(sdl3.c.SDL_Keycode) {
 pub const KeyState = struct {
     down_first_frame: bool,
     down: bool,
+    repeat: bool,
 };
 
 var key_states: std.AutoHashMap(sdl3.keycode.Keycode, KeyState) = undefined;
@@ -372,6 +373,7 @@ pub fn resetKeyStates() void {
 
     while (iter.next()) |value| {
         value.down_first_frame = false;
+        value.repeat = false;
     }
 }
 
@@ -408,6 +410,9 @@ pub fn onKeyDownEvent(event: sdl3.events.Keyboard) void {
 
         if (!event.repeat) {
             state.value_ptr.down_first_frame = true;
+        }
+        else {
+            state.value_ptr.repeat = true;
         }
     }
 }
