@@ -29,7 +29,7 @@ pub fn renderProfiler() void {
 
     const times = internal.profiling.getTimes();
 
-    const total: f32 = @floatFromInt(times[times.len - 1].time / std.time.us_per_ms);
+    const total: f32 = @as(f32, @floatFromInt(times[times.len - 1].time))  / std.time.us_per_ms;
 
     values[current] = total;
     current = @mod(current + 1, average_size);
