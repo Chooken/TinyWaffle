@@ -29,7 +29,7 @@ pub fn renderProfiler() void {
 
     const times = internal.profiling.getTimes();
 
-    const total: f32 = @as(f32, @floatFromInt(times[times.len - 1].time))  / std.time.us_per_ms;
+    const total: f32 = @floatFromInt(times[times.len - 1].time);
 
     values[current] = total;
     current = @mod(current + 1, average_size);
@@ -78,7 +78,7 @@ pub fn renderProfiler() void {
 
     average /= average_size;
 
-    const string = root.assert.ok(std.fmt.allocPrint(internal.allocator, "Average: {d}ms\n", .{average}));
+    const string = root.assert.ok(std.fmt.allocPrint(internal.allocator, "Average: {d}ms\n", .{average / std.time.us_per_ms}));
 
     root.renderer.drawScreenspaceText(
         .{ .w = 1000, .h = 1000, .x = 120, .y = @floatFromInt(times.len * (font_size + 6)) },
@@ -89,7 +89,7 @@ pub fn renderProfiler() void {
     );
     internal.allocator.free(string);
 
-    const string2 = root.assert.ok(std.fmt.allocPrint(internal.allocator, "1% Low: {d}ms\n", .{one_perc_low}));
+    const string2 = root.assert.ok(std.fmt.allocPrint(internal.allocator, "1% Low: {d}ms\n", .{one_perc_low / std.time.us_per_ms}));
 
     root.renderer.drawScreenspaceText(
         .{ .w = 1000, .h = 1000, .x = 120, .y = @floatFromInt((times.len + 1) * (font_size + 6)) },
