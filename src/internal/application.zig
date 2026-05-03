@@ -117,6 +117,8 @@ fn loop() !void {
     while (application_running) {
         frame_start = std.Io.Clock.real.now(internal.io);
 
+        internal.profiling.reset();
+
         internal.profiling.startScope("Total");
 
         // Events
