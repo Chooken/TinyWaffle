@@ -9,6 +9,10 @@ pub fn getAllocator() std.mem.Allocator {
     return internal.allocator;
 }
 
+pub fn getIo() std.Io {
+    return internal.io;
+}
+
 pub fn quit() void {
     internal.application.quit();
 }
