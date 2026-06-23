@@ -2,7 +2,7 @@ const std = @import("std");
 const internal = @import("internal.zig");
 
 pub fn getApplicationPath() []u8 {
-    return internal.application_path;
+    return internal.application.path;
 }
 
 pub fn getAllocator() std.mem.Allocator {
@@ -10,5 +10,5 @@ pub fn getAllocator() std.mem.Allocator {
 }
 
 pub fn quit() void {
-    internal.quit();
+    internal.application.quit();
 }
