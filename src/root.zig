@@ -49,6 +49,77 @@ pub const Color = struct {
     }
 };
 
+pub const OklabColor = struct {
+    l: f32,
+    a: f32,
+    b: f32,
+
+    pub fn toRgb(self: OklabColor) Color {
+        const _l = self.l + 0.3963377774 * self.a + 0.2158037573 * self.b;
+        const _m = self.l - 0.1055613458 * self.a - 0.0638541728 * self.b;
+        const _s = self.l - 0.0894841775 * self.a - 1.2914855480 * self.b;
+
+        const l = _l * _l * _l;
+        const m = _m * _m * _m;
+        const s = _s * _s * _s;
+
+        const f_r =  4.0767416621 * l - 3.3077115913 * m + 0.2309699292 * s;
+        const f_g = -1.2684380046 * l + 2.6097574011 * m - 0.3413193965 * s;
+        const f_b = -0.0041960863 * l - 0.7034186147 * m + 1.7076147010 * s;
+
+        return .{
+            .r = linearToU8(f_r),
+            .g = linearToU8(f_g),
+            .b = linearToU8(f_b),
+            .a = 255,
+        };
+    }
+
+    fn linearToU8(linear: f32) u8 {
+        if (linear <= 0) {
+            return 0;
+        } else if (linear >= 1) {
+            return 0xff;
+        } else {
+            const v: f32 = 
+                if (linear < 0.0031308) linear * 12.92 
+                else 1.055 * std.math.pow(f32, linear, 1.2/2.4) - 0.055;
+            return @intFromFloat(v * 255);
+        }
+    }
+};
+
+pub const OklchColor = struct {
+    l: f32,
+    c: f32,
+    h: f32,
+
+    pub fn from01(l: f32, c: f32, h: f32) OklchColor {
+        return .{
+            .l = l,
+            .c = 0.4 * c,
+            .h = 360 * h,
+        };
+    }
+
+    pub fn rotateHue(self: *OklchColor, delta: f32) void {
+        self.h = @mod(self.h + delta, 360);
+    }
+
+    pub fn toOklab(self: OklchColor) OklabColor {
+        const half_radius = self.h * std.math.pi / 180;
+        return .{ 
+            .l = self.l,
+            .a = self.c * std.math.cos(half_radius),
+            .b = self.c * std.math.sin(half_radius),
+        };
+    }
+
+    pub fn toRgb(self: OklchColor) Color {
+        return self.toOklab().toRgb();
+    }
+};
+
 pub fn Vec2(comptime T: type) type {
     return struct {
         x: T,

@@ -19,15 +19,19 @@ pub fn main() !void {
 
 var keyboard_input = tw.input.KeyboardInput { };
 
+var color = tw.OklchColor.from01(0.8, 0.10, 0);
+
 pub fn on_enter() !void {
+
+    tw.renderer.setClearColor(color.toRgb());
 
     try keyboard_input.captureInput();
 }
 
 pub fn update() !void {
     tw.profiling.startScope("test");
-    const size = tw.window.GetSize();
-    tw.renderer.drawScreenspaceRect(.from(0,0,@floatFromInt(size.x),@floatFromInt(size.y)), .Red);
+    //const size = tw.window.GetSize();
+    //tw.renderer.drawScreenspaceRect(.from(0,0,@floatFromInt(size.x),@floatFromInt(size.y)), .Red);
     tw.renderer.drawLine(.{ .x = 0, .y = 0 }, .{ .x = 1, .y = 1, }, .Green);
     if (keyboard_input.get()) |input| {
         tw.renderer.drawText(
@@ -37,6 +41,9 @@ pub fn update() !void {
             .Red);
     }
     tw.profiling.endScope("test");
+
+    color.rotateHue(tw.time.getDeltaTime() * 90);
+    tw.renderer.setClearColor(color.toRgb());
 }
 
 pub fn exit() !void {
